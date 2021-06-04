@@ -95,8 +95,8 @@
 // And the options to add to the hardware extensions
 #define FLOPPY_BRIDGE_CONFIG_OPTIONS																															\
 	static const struct expansionboardsettings arduino_reader_writer_options[] = {{																				\
-		_T("COM Port\0")  _T("Auto Detect\0")																													\
-		_T("port\0") _T("AUTO\0")																																\
+		_T("COM Port\0")  _T("Auto Detect\0"),																													\
+		_T("port\0") _T("AUTO\0"),																																\
 		true,false,0 }, { NULL }};																																\
 	static const struct expansionboardsettings greaseweazle_reader_writer_options[] = {{																		\
 		_T("Drive on Cable\0") _T("Drive A\0") _T("Drive B\0") ,																								\
