@@ -1,7 +1,8 @@
 # FloppyDriveBridge
 
-# FloppyDriveBridge for *UAE
-This folder contaisn the latest implementations for real floppy disk access within *UAE emulators.
+# FloppyDriveBridges for *UAE
+Bridges are what I have chosen to call the name of each 'real' drive added to the emulator.
+This folder contains the latest implementations for real floppy disk access within *UAE emulators.
 For these to work, the main emulator must have had the ''disk.cpp'' and ''expansion.cpp'' updated from the original.
 This only needs doing once.  You can see these in https://github.com/RobSmithDev/WinUAE
 
