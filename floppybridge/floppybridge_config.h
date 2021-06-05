@@ -72,7 +72,7 @@
 		NULL, NULL, NULL, NULL, ROMTYPE_ARDUINOREADER_WRITER | ROMTYPE_NOT, 0, 0, BOARD_IGNORE, true,															\
 		bridge_drive_selection_config, 0, false, EXPANSIONTYPE_FLOPPY,																							\
 		0, 0, 0, false, NULL, false, 0, arduino_reader_writer_options },																						\
-	{	_T("greaseweazlewriter"), _T("GreaseWeazle"), _T("Keir Fraser/RobSmithDev"),																			\
+	{	_T("greaseweazlewriter"), _T("Greaseweazle"), _T("Keir Fraser"),																			\
 		NULL, NULL, NULL, NULL, ROMTYPE_GREASEWEAZLEREADER_WRITER | ROMTYPE_NOT, 0, 0, BOARD_IGNORE, true,														\
 		bridge_drive_selection_config, 0, false, EXPANSIONTYPE_FLOPPY,																							\
 		0, 0, 0, false, NULL, false, 0, greaseweazle_reader_writer_options },																					\
