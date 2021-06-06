@@ -42,7 +42,7 @@
 #include "RotationExtractor.h"
 
 // Maximum data we can receive.  
-#define MFM_BUFFER_MAX_TRACK_LENGTH			0x3800
+#define MFM_BUFFER_MAX_TRACK_LENGTH			0x3A00
 
 // Max number of cylinders we can offer
 #define MAX_CYLINDER_BRIDGE 82
