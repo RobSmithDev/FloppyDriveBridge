@@ -45,6 +45,7 @@ public:
 	virtual bool isAtCylinder0() override final { return m_currentTrack == 0; }
 	virtual unsigned char getMaxCylinder() override final { return MAX_CYLINDER_BRIDGE; };
 	virtual bool isMotorRunning() override final { return m_isMotorRunning; };
+	virtual void handleNoClickStep(bool side) override final;
 	virtual bool isReady() override;
 	virtual bool isDiskInDrive() override final { return true; };
 	virtual bool hasDiskChanged() override final { return false; };

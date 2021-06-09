@@ -182,6 +182,13 @@ bool ArduinoFloppyDiskBridge::getDiskChangeStatus(const bool forceCheck) {
 	return m_io.checkForDisk(forceCheck) != ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive;
 }
 
+// If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
+// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+// Return FALSE if this is not supported by the bridge
+bool ArduinoFloppyDiskBridge::performNoClickSeek() {
+	return m_io.performNoClickSeek() == ArduinoFloppyReader::DiagnosticResponse::drOK;
+}
+
 // Trigger a seek to the requested cylinder, this can block until complete
 bool ArduinoFloppyDiskBridge::setCurrentCylinder(const unsigned int cylinder) {
 	// No need if its busy

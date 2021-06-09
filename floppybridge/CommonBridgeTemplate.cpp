@@ -592,6 +592,16 @@ void CommonBridgeTemplate::processCommand(const QueueInfo& info) {
 		m_motorSpinningUpStart = std::chrono::steady_clock::now();
 		break;
 
+	case QueueCommand::qcNoClickSeek:
+		if (m_actualCurrentCylinder == 0) {
+			// If it fails, simulate it
+			if (!performNoClickSeek()) {
+				setCurrentCylinder(1);
+				setCurrentCylinder(0);
+			}
+		}
+		break;
+
 	case QueueCommand::qcGotoToTrack:
 		setCurrentCylinder(info.option.i);
 		m_actualCurrentCylinder = info.option.i;
@@ -787,6 +797,13 @@ void CommonBridgeTemplate::setMotorStatus(bool side, bool turnOn) {
 	m_motorIsReady = false;
 	m_motorSpinningUp = false;
 	queueCommand(turnOn ? QueueCommand::qcMotorOn : QueueCommand::qcMotorOff);
+}
+
+// Handle the drive stepping to track -1 - this is used to 'no-click' detect the disk
+void CommonBridgeTemplate::handleNoClickStep(bool side) {
+	switchDiskSide(side);
+
+	queueCommand(QueueCommand::qcNoClickSeek);
 }
 
 // Seek to a specific track

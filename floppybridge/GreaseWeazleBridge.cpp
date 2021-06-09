@@ -46,6 +46,14 @@ bool GreaseWeazleDiskBridge::attemptToDetectDiskChange() {
 	}
 }
 
+// If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
+// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+// Return FALSE if this is not supported by the bridge
+bool GreaseWeazleDiskBridge::performNoClickSeek() {
+	// TODO: Update when new firmware has suitable command
+	return false;
+}
+
 // If your device supports the DiskChange option then return TRUE here.  If not, then the code will simulate it
 bool GreaseWeazleDiskBridge::supportsDiskChange() {
 	return m_io.supportsDiskChange();

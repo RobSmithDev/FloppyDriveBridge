@@ -231,6 +231,14 @@ void ADFBridge::gotoCylinder(int trackNumber, bool side) {
 	m_currentTrack = trackNumber;
 }
 
+// If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
+// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+// Return FALSE if this is not supported by the bridge
+void ADFBridge::handleNoClickStep(bool side) {
+	m_floppySide = side ? DiskSurface::dsUpper : DiskSurface::dsLower;
+}
+
+
 // Submits a single WORD of data received during a DMA transfer to the disk buffer.  This needs to be saved.  It is usually flushed when commitWriteBuffer is called
 // You should reset this buffer if side or track changes.  mfmPosition is provided purely for any index sync you may wish to do
 void ADFBridge::writeShortToBuffer(bool side, unsigned int track, unsigned short mfmData, int mfmPosition) {

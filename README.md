@@ -6,6 +6,8 @@ This folder contains the latest implementations for real floppy disk access with
 For these to work, the main emulator must have had the ''disk.cpp'' and ''expansion.cpp'' updated from the original.
 This only needs doing once.  You can see these in https://github.com/RobSmithDev/WinUAE
 
+Small update for Bridge to support 'no-click' option 
+
 # Supported Devices:
 ## Arduino Reader/Writer at https://amiga.robsmithdev.co.uk
 Requires a mod to the circuit to give access to the DISKCHANGE pin.  Requires firmware V1.8
