@@ -33,6 +33,9 @@ private:
 	// Hardware connection
 	GreaseWeazle::GreaseWeazleInterface m_io;
 
+	// Remember where we are
+	int m_currentCylinder = 0;
+
 protected:
 	// This is called by the main thread incase you need to do anything specific at regular intervals
 	virtual void poll() override;

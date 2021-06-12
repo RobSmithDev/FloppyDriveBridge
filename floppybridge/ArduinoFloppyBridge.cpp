@@ -186,7 +186,15 @@ bool ArduinoFloppyDiskBridge::getDiskChangeStatus(const bool forceCheck) {
 // Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
 // Return FALSE if this is not supported by the bridge
 bool ArduinoFloppyDiskBridge::performNoClickSeek() {
-	return m_io.performNoClickSeek() == ArduinoFloppyReader::DiagnosticResponse::drOK;
+	// Claim we did it anyway
+	if (!m_io.getFirwareVersion().fullControlMod) return true;
+
+	if (m_io.performNoClickSeek() == ArduinoFloppyReader::DiagnosticResponse::drOK) {
+		bool ignoreDiskCheck = (isMotorRunning()) && (!isReady());
+		updateLastManualCheckTime();
+		return true;
+	}
+	return false;
 }
 
 // Trigger a seek to the requested cylinder, this can block until complete

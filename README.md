@@ -3,10 +3,13 @@
 # FloppyDriveBridges for *UAE
 Bridges are what I have chosen to call the name of each 'real' drive added to the emulator.
 This folder contains the latest implementations for real floppy disk access within *UAE emulators.
-For these to work, the main emulator must have had the ''disk.cpp'' and ''expansion.cpp'' updated from the original.
-This only needs doing once.  You can see these in https://github.com/RobSmithDev/WinUAE
+For these to work, the main emulator must have had the ''disk.cpp'' and ''expansion.cpp'' updated from the original
+This only needs doing once, and again if it is updated (ie: the no-click support below). 
+You can see these files at https://github.com/RobSmithDev/WinUAE
 
+# Updates:
 Small update for Bridge to support 'no-click' option 
+Fixed some issues with thread scheduling on Linux (Pi)
 
 # Supported Devices:
 ## Arduino Reader/Writer at https://amiga.robsmithdev.co.uk
