@@ -109,7 +109,7 @@ namespace ArduinoFloppyReader {
 		drDiagnosticNotAvailable,
 		drUSBSerialBad,
 		drCTSFailure,
-		drRewindFailure
+		drRewindFailure,
 	};
 
 	enum class LastCommand {
@@ -128,7 +128,6 @@ namespace ArduinoFloppyReader {
 		lcReadTrackStream,
 		lcCheckDiskInDrive,
 		lcCheckDiskWriteProtected,
-		lcEraseTrack
 	};
 
 	class ArduinoInterface {
@@ -246,9 +245,6 @@ namespace ArduinoFloppyReader {
 		DiagnosticResponse  writeCurrentTrack(const unsigned char* data, const unsigned short numBytes, const bool writeFromIndexPulse);
 		// The precomp version of the above. 
 		DiagnosticResponse  writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp);
-
-		// Erases the current track by writing 0xAA to it
-		DiagnosticResponse eraseCurrentTrack();
 
 		// Check CTS status - you must open with CTS disabled for this to work
 		DiagnosticResponse testCTS();

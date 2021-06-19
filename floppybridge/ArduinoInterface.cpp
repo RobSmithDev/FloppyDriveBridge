@@ -52,7 +52,6 @@ using namespace ArduinoFloppyReader;
 #define COMMAND_WRITETRACK         '>'
 #define COMMAND_ENABLEWRITE        '~'
 #define COMMAND_DIAGNOSTICS        '&'
-#define COMMAND_ERASETRACK		   'X'
 #define COMMAND_SWITCHTO_DD		   'D'   // Requires Firmware V1.6
 #define COMMAND_SWITCHTO_HD		   'H'   // Requires Firmware V1.6
 #define COMMAND_DETECT_DISK_TYPE   'M'	 // currently not implemented here
@@ -86,7 +85,6 @@ std::string lastCommandToName(LastCommand cmd) {
 	case LastCommand::lcReadTrackStream: return "ReadTrackStream";
 	case LastCommand::lcCheckDiskInDrive: return "CheckDiskInDrive";
 	case LastCommand::lcCheckDiskWriteProtected: return "CheckDiskWriteProtected";
-	case LastCommand::lcEraseTrack: return "EraseTrack";
 
 	default:							return "Unknown";
 	}
@@ -741,43 +739,6 @@ DiagnosticResponse ArduinoInterface::selectTrack(const unsigned char trackIndex,
 	return m_lastError;
 }
 
-// Erases the current track by writing 0xAA to it
-DiagnosticResponse ArduinoInterface::eraseCurrentTrack() {
-	m_lastError = runCommand(COMMAND_ERASETRACK);
-	if (m_lastError != DiagnosticResponse::drOK) {
-		m_lastCommand = LastCommand::lcEraseTrack;
-		return m_lastError;
-	}
-
-	char result;
-	if (!deviceRead(&result, 1, true)) {
-		m_lastCommand = LastCommand::lcEraseTrack;
-		m_lastError = DiagnosticResponse::drReadResponseFailed;
-		return m_lastError;
-	}
-
-	if (result == 'N') {
-		m_lastCommand = LastCommand::lcEraseTrack;
-		m_lastError = DiagnosticResponse::drWriteProtected;
-		return m_lastError;
-	}
-
-	// Check result
-	if (!deviceRead(&result, 1, true)) {
-		m_lastCommand = LastCommand::lcEraseTrack;
-		m_lastError = DiagnosticResponse::drReadResponseFailed;
-		return m_lastError;
-	}
-
-	if (result != '1') {
-		m_lastCommand = LastCommand::lcEraseTrack;
-		m_lastError = DiagnosticResponse::drError;
-		return m_lastError;
-	}
-
-	return m_lastError;
-}
-
 // Choose which surface of the disk to read from
 DiagnosticResponse ArduinoInterface::selectSurface(const DiskSurface side) {
 	m_lastError = runCommand((side == DiskSurface::dsUpper) ? COMMAND_HEAD0 : COMMAND_HEAD1);
@@ -1107,8 +1068,8 @@ DiagnosticResponse ArduinoInterface::writeCurrentTrackPrecomp(const unsigned cha
 	unsigned char* output = outputBuffer;
 	int lastCount = 2;
 
-	// Re-encode the data into our format and apply precomp.  The +8 is to ensure theres some padding around the edge which will come out as 010101 etc
-	while (pos < numBytes + 8) {
+	// Re-encode the data into our format and apply precomp.  
+	while (pos < numBytes) {
 		*output = 0;
 
 		for (int i = 0; i < 2; i++) {
@@ -1119,7 +1080,7 @@ DiagnosticResponse ArduinoInterface::writeCurrentTrackPrecomp(const unsigned cha
 				b = readBit(mfmData, numBytes, pos, bit);
 				sequence = ((sequence << 1) & 0x7F) | b;
 				count++;
-			} while (((sequence & 0x08) == 0) && (pos < numBytes + 8));
+			} while (((sequence & 0x08) == 0) && (pos < numBytes + 8));  // the +8 is for safety
 
 			// Validate range
 			if (count < 2) count = 2;  // <2 would be a 11 sequence, not allowed

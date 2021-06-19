@@ -8,6 +8,7 @@ This only needs doing once, and again if it is updated (ie: the no-click support
 You can see these files at https://github.com/RobSmithDev/WinUAE
 
 # Updates:
+19th June 2021: Massivly improve write system.  Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
 Small update for Bridge to support 'no-click' option 
 Fixed some issues with thread scheduling on Linux (Pi)
 
