@@ -1,4 +1,4 @@
-/* ArduinoFloppyReader (and writer)
+/* ArduinoFloppyReaderWriter aka DrawBridge
 *
 * Copyright (C) 2017-2021 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
@@ -52,6 +52,7 @@ using namespace ArduinoFloppyReader;
 #define COMMAND_WRITETRACK         '>'
 #define COMMAND_ENABLEWRITE        '~'
 #define COMMAND_DIAGNOSTICS        '&'
+#define COMMAND_ERASETRACK		   'X'
 #define COMMAND_SWITCHTO_DD		   'D'   // Requires Firmware V1.6
 #define COMMAND_SWITCHTO_HD		   'H'   // Requires Firmware V1.6
 #define COMMAND_DETECT_DISK_TYPE   'M'	 // currently not implemented here
@@ -85,6 +86,7 @@ std::string lastCommandToName(LastCommand cmd) {
 	case LastCommand::lcReadTrackStream: return "ReadTrackStream";
 	case LastCommand::lcCheckDiskInDrive: return "CheckDiskInDrive";
 	case LastCommand::lcCheckDiskWriteProtected: return "CheckDiskWriteProtected";
+	case LastCommand::lcEraseTrack: return "EraseTrack";
 
 	default:							return "Unknown";
 	}
@@ -214,7 +216,7 @@ DiagnosticResponse ArduinoInterface::checkForDisk(bool forceCheck) {
 			m_diskInDrive = false;
 		}
 		else {
-			if (response == '1') m_diskInDrive = true; 
+			if (response == '1') m_diskInDrive = true;
 		}
 
 		// Also read the write protect status
@@ -359,7 +361,7 @@ DiagnosticResponse ArduinoInterface::attemptToSync(std::string& versionString, S
 			if ((buffer[0] == '1') && (buffer[1] == 'V') && ((buffer[2] >= '1') && (buffer[2] <= '9')) && ((buffer[3] == ',') || (buffer[3] == '.')) && ((buffer[4] >= '0') && (buffer[4] <= '9'))) {
 
 				// Success
-				port.purgeBuffers(); 
+				port.purgeBuffers();
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				port.purgeBuffers();
 				versionString = &buffer[1];
@@ -462,7 +464,7 @@ DiagnosticResponse ArduinoInterface::openPort(const std::wstring& portName, bool
 	for (;;) {
 		unsigned long size = m_comPort.read(buffer, 1);
 		if (size < 1)
-			if (counter++>=10) break;
+			if (counter++ >= 10) break;
 	}
 
 	// Possibly a bit overkill
@@ -739,6 +741,43 @@ DiagnosticResponse ArduinoInterface::selectTrack(const unsigned char trackIndex,
 	return m_lastError;
 }
 
+// Erases the current track by writing 0xAA to it
+DiagnosticResponse ArduinoInterface::eraseCurrentTrack() {
+	m_lastError = runCommand(COMMAND_ERASETRACK);
+	if (m_lastError != DiagnosticResponse::drOK) {
+		m_lastCommand = LastCommand::lcEraseTrack;
+		return m_lastError;
+	}
+
+	char result;
+	if (!deviceRead(&result, 1, true)) {
+		m_lastCommand = LastCommand::lcEraseTrack;
+		m_lastError = DiagnosticResponse::drReadResponseFailed;
+		return m_lastError;
+	}
+
+	if (result == 'N') {
+		m_lastCommand = LastCommand::lcEraseTrack;
+		m_lastError = DiagnosticResponse::drWriteProtected;
+		return m_lastError;
+	}
+
+	// Check result
+	if (!deviceRead(&result, 1, true)) {
+		m_lastCommand = LastCommand::lcEraseTrack;
+		m_lastError = DiagnosticResponse::drReadResponseFailed;
+		return m_lastError;
+	}
+
+	if (result != '1') {
+		m_lastCommand = LastCommand::lcEraseTrack;
+		m_lastError = DiagnosticResponse::drError;
+		return m_lastError;
+	}
+
+	return m_lastError;
+}
+
 // Choose which surface of the disk to read from
 DiagnosticResponse ArduinoInterface::selectSurface(const DiskSurface side) {
 	m_lastError = runCommand((side == DiskSurface::dsUpper) ? COMMAND_HEAD0 : COMMAND_HEAD1);
@@ -951,7 +990,8 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 						// Always save this back
 						extractor.getIndexSequence(startBitPatterns);
 					}
-				} else
+				}
+				else
 					if ((extractor.totalTimeReceived() > 300000000) && (noDataCounter > 100)) {
 						// No data, stop
 						abortReadStreaming();
@@ -1035,9 +1075,9 @@ inline int readBit(const unsigned char* buffer, const unsigned int maxLength, in
 	0	0	0    	1	   0	1	0       Early			0x0A
 	0	1	0    	1	   0	0	0       Late			0x28
 	0	1	0    	1	   0	0	1       Late			0x29
-	0	1	0    	1	   0	1	0       Normal	
-	1	0	0    	1	   0	0	0       Late			0x48	
-	1	0	0    	1	   0	0	1       Normal	
+	0	1	0    	1	   0	1	0       Normal
+	1	0	0    	1	   0	0	0       Late			0x48
+	1	0	0    	1	   0	0	1       Normal
 	1	0	0    	1	   0	1	0       Early			0x4A
 */
 
@@ -1068,7 +1108,7 @@ DiagnosticResponse ArduinoInterface::writeCurrentTrackPrecomp(const unsigned cha
 	unsigned char* output = outputBuffer;
 	int lastCount = 2;
 
-	// Re-encode the data into our format and apply precomp.  
+	// Re-encode the data into our format and apply precomp.  The +8 is to ensure theres some padding around the edge which will come out as 010101 etc
 	while (pos < numBytes) {
 		*output = 0;
 
@@ -1080,7 +1120,7 @@ DiagnosticResponse ArduinoInterface::writeCurrentTrackPrecomp(const unsigned cha
 				b = readBit(mfmData, numBytes, pos, bit);
 				sequence = ((sequence << 1) & 0x7F) | b;
 				count++;
-			} while (((sequence & 0x08) == 0) && (pos < numBytes + 8));  // the +8 is for safety
+			} while (((sequence & 0x08) == 0) && (pos < numBytes + 8));
 
 			// Validate range
 			if (count < 2) count = 2;  // <2 would be a 11 sequence, not allowed
