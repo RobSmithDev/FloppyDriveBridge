@@ -1,0 +1,215 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United Kingdom) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,8,0,0
+ PRODUCTVERSION 0,8,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x3L
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904b0"
+        BEGIN
+            VALUE "CompanyName", "RobSmithDev https://amiga.robsmithdev.co.uk"
+            VALUE "FileDescription", "UAE Floppy Bridge https://amiga.robsmithdev.co.uk"
+            VALUE "FileVersion", "0.8.0.0"
+            VALUE "InternalName", "FloppyBridge.dll"
+            VALUE "LegalCopyright", "Copyright (C) 2021 RobSmithDev"
+            VALUE "OriginalFilename", "FloppyBridge.dll"
+            VALUE "ProductName", "UAE Floppy Bridge"
+            VALUE "ProductVersion", "0.8.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x809, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BRIDGELOGO0         BITMAP                  "bridge00.bmp"
+
+IDB_BRIDGELOGO1         BITMAP                  "bridge01.bmp"
+
+IDB_BRIDGELOGO2         BITMAP                  "bridge02.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PROFILELISTEDITOR DIALOGEX 0, 0, 339, 228
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "FloppyBridge - Profile Manager"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Static",IDC_PROFILELIST_TITLE,7,7,253,8,SS_NOPREFIX
+    LTEXT           "Static",IDC_PROFILELIST_URL,7,17,250,8,SS_NOPREFIX | SS_NOTIFY
+    PUSHBUTTON      "Check for Updates",IDC_CHECKUPDATES,260,7,72,14
+    LISTBOX         IDC_LIST1,7,33,325,167,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Create...",IDCREATE,7,206,50,14
+    PUSHBUTTON      "Edit...",IDEDIT,61,206,50,14
+    PUSHBUTTON      "Delete...",IDDELETE,115,206,50,14
+    DEFPUSHBUTTON   "OK",IDOK,229,206,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,282,206,50,14
+END
+
+IDD_PROFILEEDITOR DIALOGEX 0, 0, 323, 195
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "FloppyBridge - Edit Profile"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,212,174,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,266,174,50,14
+    RTEXT           "Profile Name:",IDC_STATIC,9,10,44,8
+    EDITTEXT        IDC_PROFILENAME,57,8,259,14,ES_AUTOHSCROLL
+    RTEXT           "Driver:",IDC_STATIC,29,30,23,8
+    COMBOBOX        IDC_DRIVER,57,28,259,165,CBS_DROPDOWNLIST | CBS_OWNERDRAWVARIABLE | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Mode:",IDC_STATIC,31,82,21,8
+    COMBOBOX        IDC_MODE,57,80,259,85,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Disk Type:",IDC_STATIC,18,133,34,8
+    COMBOBOX        IDC_DISKTYPE,57,131,259,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Cable Select:",IDC_STATIC,9,152,43,8
+    COMBOBOX        IDC_CABLE,57,149,259,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "COM Port:",IDC_STATIC,18,63,34,8
+    COMBOBOX        IDC_COMPORT,57,61,197,124,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Smart Speed (Dynamically switch on Turbo - *might* break copy protection)",IDC_SMART,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,100,259,10
+    CONTROL         "Auto-Cache (continue to cache disk data while drive is idle)",IDC_AUTOCACHE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,114,259,10
+    LTEXT           "url",IDC_URL,57,46,259,8,SS_NOTIFY
+    CONTROL         "Auto Detect",IDC_AUTODETECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,262,63,54,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_PROFILELISTEDITOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 332
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 220
+    END
+
+    IDD_PROFILEEDITOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 9
+        RIGHTMARGIN, 316
+        VERTGUIDE, 52
+        VERTGUIDE, 57
+        TOPMARGIN, 8
+        BOTTOMMARGIN, 188
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_PROFILELISTEDITOR AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 100, 0, 0,
+    0, 0, 0, 0
+END
+
+IDD_PROFILEEDITOR AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // English (United Kingdom) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

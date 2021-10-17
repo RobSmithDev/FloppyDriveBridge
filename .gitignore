@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+/windows/Debug
+/windows/Release
+/windows/x64/Debug
+/windows/x64/Release
+/windows/.vs/FloppyBridge/v16
+/floppybridge/.vs/FloppyBridge/v16
