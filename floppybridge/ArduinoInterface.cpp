@@ -1373,7 +1373,8 @@ inline int readBit(const unsigned char* buffer, const unsigned int maxLength, in
 			bit = 7;
 			pos++;
 		}
-		return (bit & 1) ? 0 : 1;
+		// Prevent two '1's in a row at the end of the reading
+		return (((buffer[maxLength-1] & 1)!=0) ^ ((bit & 1)!=0)) ? 1 : 0;
 	}
 
 	int ret = (buffer[pos] >> bit) & 1;

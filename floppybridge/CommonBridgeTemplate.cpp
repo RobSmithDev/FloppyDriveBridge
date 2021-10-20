@@ -975,7 +975,7 @@ void CommonBridgeTemplate::writeShortToBuffer(bool side, unsigned int track, uns
 		OutputDebugStringA("Warning 2");
 	}
 }
-
+ 
 // Return TRUE if there is data ready to be committed to disk
 bool CommonBridgeTemplate::isReadyToWrite() {
 	return (m_currentWriteTrack.floppyBufferSizeBits);

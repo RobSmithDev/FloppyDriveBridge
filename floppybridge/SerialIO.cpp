@@ -31,9 +31,9 @@
 #include "RotationExtractor.h"
 #pragma comment(lib, "setupapi.lib")
 static const DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc2 = { {0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2}, 4 };
-static const DEVPROPKEY DEVPKEY_Device_InstanceId2 = { {0x78c34fc8, 0x104a, 0x4aca, 0x9e, 0xa4, 0x52, 0x4d, 0x52, 0x99, 0x6e, 0x57}, 256 };
+static const DEVPROPKEY DEVPKEY_Device_InstanceId2 = { {0x78c34fc8, 0x104a, 0x4aca, 0x9e, 0xa4, 0x52, 0x4d, 0x52, 0x99, 0x6e, 0x57}, 256 };   
 #ifndef GUID_DEVINTERFACE_COMPORT
-DEFINE_GUID(GUID_DEVINTERFACE_COMPORT, 0x86e0d1e0, 0x8089, 0x11d0, 0x9c, 0xe4, 0x08, 0x00, 0x3e, 0x30, 0x1f, 0x73);
+DEFINE_GUID(GUID_DEVINTERFACE_COMPORT,0x86e0d1e0, 0x8089, 0x11d0, 0x9c, 0xe4, 0x08, 0x00, 0x3e, 0x30, 0x1f, 0x73);
 #endif
 
 #else
@@ -206,17 +206,12 @@ void SerialIO::enumSerialPorts(std::vector<SerialPortInformation>& serialPorts) 
 
 						// Finish it
 						info.portName += L" (" + info.productName + L")";
-
-						// Ensure it doesnt contain any BAR or COMMA characters.
-						for (wchar_t& c : info.portName)
-							if ((c == L'|') || (c == L',') || (c == L'[') || (c == L']')) c = L' ';
-
 						info.ftdiIndex = index;
 
 						// Test if one with this name already exists
 					} while (std::find_if(serialPorts.begin(), serialPorts.end(), [&info](const SerialPortInformation& port)->bool {
 						return (info.portName == port.portName);
-						}) != serialPorts.end());
+					}) != serialPorts.end());
 
 					// Save
 					serialPorts.push_back(info);
@@ -224,63 +219,100 @@ void SerialIO::enumSerialPorts(std::vector<SerialPortInformation>& serialPorts) 
 			}
 			free(devList);
 		}
-	}
+	}	
 #endif
 
 
 #ifdef _WIN32
-	// Query for hardware
-	HDEVINFO hDevInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_COMPORT, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-	if (hDevInfoSet == INVALID_HANDLE_VALUE) return;
+	std::vector<GUID> toSearch;
 
-	// Scan for items
-	DWORD devIndex = 0;
-	SP_DEVINFO_DATA devInfo;
-	devInfo.cbSize = sizeof(SP_DEVINFO_DATA);
+	// Check normal COMPORTS guids
+	toSearch.push_back(GUID_DEVINTERFACE_COMPORT);
 
-	// Enum devices
-	while (SetupDiEnumDeviceInfo(hDevInfoSet, devIndex, &devInfo)) {
-		HKEY key = SetupDiOpenDevRegKey(hDevInfoSet, &devInfo, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_QUERY_VALUE);
-		if (key != INVALID_HANDLE_VALUE) {
-
-			WCHAR name[128];
-			DWORD nameLength = 128;
-
-			// Get the COM Port Name
-			if (RegQueryValueExW(key, L"PortName", NULL, NULL, (LPBYTE)name, &nameLength) == ERROR_SUCCESS) {
-				SerialPortInformation port;
-				port.portName = name;
-
-				// Check it starts with COM
-				if ((port.portName.length() >= 4) && (port.portName.substr(0, 3) == L"COM")) {
-					// Get the hardware ID
-					nameLength = 128;
-					DWORD dwType;
-					if (SetupDiGetDeviceRegistryPropertyW(hDevInfoSet, &devInfo, SPDRP_HARDWAREID, &dwType, (LPBYTE)name, 128, &nameLength)) {
-						std::wstring deviceString = name;
-						int a = (int)deviceString.find(L"VID_");
-						if (a != std::wstring::npos) port.vid = wcstol(deviceString.substr(a + 4).c_str(), NULL, 16);
-						a = (int)deviceString.find(L"PID_");
-						if (a != std::wstring::npos) port.pid = wcstol(deviceString.substr(a + 4).c_str(), NULL, 16);
-					}
-
-					// Description
-					DWORD type;
-					if (SetupDiGetDeviceProperty(hDevInfoSet, &devInfo, &DEVPKEY_Device_BusReportedDeviceDesc2, &type, (PBYTE)name, 128, 0, 0)) port.productName = name;
-
-					// Instance 
-					if (SetupDiGetDeviceProperty(hDevInfoSet, &devInfo, &DEVPKEY_Device_InstanceId2, &type, (PBYTE)name, 128, 0, 0)) port.instanceID = name;
-
-					serialPorts.push_back(port);
-				}
-			}
-			RegCloseKey(key);
+	DWORD requiredSize = 8;
+	std::vector< GUID> tmp(8);
+	// Check 'PORTS' Guids
+	if (SetupDiClassGuidsFromNameA("Ports", (LPGUID)tmp.data(), requiredSize, &requiredSize)) {
+		if (requiredSize > 8) {
+			tmp.resize(requiredSize);
+			if (!SetupDiClassGuidsFromNameA("Ports", (LPGUID)tmp.data(), requiredSize, &requiredSize)) requiredSize = 0;
 		}
-
-		devIndex++;
+		// Dont add duplicates
+		for (size_t c = 0; c < requiredSize; c++)
+			if (std::find(toSearch.begin(), toSearch.end(), tmp[c]) == toSearch.end())
+				toSearch.push_back(tmp[c]);
+	}
+	requiredSize = 8;
+	tmp.resize(8);
+	// Check 'MODEM' Guids
+	if (SetupDiClassGuidsFromNameA("Modem", (LPGUID)tmp.data(), requiredSize, &requiredSize)) {
+		if (requiredSize > 8) {
+			tmp.resize(requiredSize);
+			if (!SetupDiClassGuidsFromNameA("Modem", (LPGUID)tmp.data(), requiredSize, &requiredSize)) requiredSize = 0;
+		}
+		// Dont add duplicates
+		for (size_t c = 0; c < requiredSize; c++)
+			if (std::find(toSearch.begin(), toSearch.end(), tmp[c]) == toSearch.end())
+				toSearch.push_back(tmp[c]);
 	}
 
-	SetupDiDestroyDeviceInfoList(hDevInfoSet);
+	for (GUID g : toSearch) {
+		// Query for hardware
+		HDEVINFO hDevInfoSet = SetupDiGetClassDevs(&g, nullptr, nullptr, DIGCF_PRESENT);
+		if (hDevInfoSet == INVALID_HANDLE_VALUE) return;
+
+		// Scan for items
+		DWORD devIndex = 0;
+		SP_DEVINFO_DATA devInfo;
+		devInfo.cbSize = sizeof(SP_DEVINFO_DATA);
+
+		// Enum devices
+		while (SetupDiEnumDeviceInfo(hDevInfoSet, devIndex, &devInfo)) {
+			HKEY key = SetupDiOpenDevRegKey(hDevInfoSet, &devInfo, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+			if (key != INVALID_HANDLE_VALUE) {
+
+				WCHAR name[128];
+				DWORD nameLength = 128;
+
+				// Get the COM Port Name
+				if (RegQueryValueExW(key, L"PortName", NULL, NULL, (LPBYTE)name, &nameLength) == ERROR_SUCCESS) {
+					SerialPortInformation port;
+					port.portName = name;
+
+					// Check it starts with COM
+					if ((port.portName.length() >= 4) && (port.portName.substr(0, 3) == L"COM")) {
+						// Get the hardware ID
+						nameLength = 128;
+						DWORD dwType;
+						if (SetupDiGetDeviceRegistryPropertyW(hDevInfoSet, &devInfo, SPDRP_HARDWAREID, &dwType, (LPBYTE)name, 128, &nameLength)) {
+							std::wstring deviceString = name;
+							int a = (int)deviceString.find(L"VID_");
+							if (a != std::wstring::npos) port.vid = wcstol(deviceString.substr(a + 4).c_str(), NULL, 16);
+							a = (int)deviceString.find(L"PID_");
+							if (a != std::wstring::npos) port.pid = wcstol(deviceString.substr(a + 4).c_str(), NULL, 16);
+						}
+
+						// Description
+						DWORD type;
+						if (SetupDiGetDeviceProperty(hDevInfoSet, &devInfo, &DEVPKEY_Device_BusReportedDeviceDesc2, &type, (PBYTE)name, 128, 0, 0)) port.productName = name;
+
+						// Instance 
+						if (SetupDiGetDeviceProperty(hDevInfoSet, &devInfo, &DEVPKEY_Device_InstanceId2, &type, (PBYTE)name, 128, 0, 0)) port.instanceID = name;
+
+						// Dont add any duplicates
+						if (std::find_if(serialPorts.begin(), serialPorts.end(), [&port](SerialPortInformation search)->bool {
+							return search.portName == port.portName;
+						}) == serialPorts.end()) serialPorts.push_back(port);
+					}
+				}
+				RegCloseKey(key);
+			}
+
+			devIndex++;
+		}
+
+		SetupDiDestroyDeviceInfoList(hDevInfoSet);
+	}
 
 #else
 
@@ -297,7 +329,7 @@ void SerialIO::enumSerialPorts(std::vector<SerialPortInformation>& serialPorts) 
 
 		char target[PATH_MAX];
 		int len = readlink(deviceRoot.c_str(), target, sizeof(target));
-		if ((len <= 0) || (len >= PATH_MAX - 1)) continue;
+		if ((len <= 0) || (len >= PATH_MAX-1)) continue;
 		target[len] = '\0';
 
 		if (strstr(target, "virtual")) continue;
@@ -308,45 +340,45 @@ void SerialIO::enumSerialPorts(std::vector<SerialPortInformation>& serialPorts) 
 
 			SerialPortInformation prt;
 			quicka2w(name, prt.portName);
-
+			
 			std::string dirName = "/sys/class/tty/" + std::string(entry->d_name) + "/device/";
 			std::string subDir = "";
 
-			for (int i = 0; i < 5; i++) {
+			for (int i=0; i<5; i++) {
 				subDir += "../";
-				std::string vidPath = dirName + "/" + subDir + "/idVendor";
+				std::string vidPath = dirName + "/"+subDir+"/idVendor";
 
 				int file = open(vidPath.c_str(), O_RDONLY | O_CLOEXEC);
 				if (file == -1) continue;
 				FILE* fle = fdopen(file, "r");
 				int count = fscanf(fle, "%4x", &prt.vid);
 				fclose(fle);
-				if (count != 1) continue;
+				if (count !=1) continue;
 
-				vidPath = dirName + "/" + subDir + "/idProduct";
+				vidPath = dirName + "/"+subDir+"/idProduct";
 				file = open(vidPath.c_str(), O_RDONLY | O_CLOEXEC);
 				if (file == -1) continue;
 				fle = fdopen(file, "r");
 				count = fscanf(fle, "%4x", &prt.pid);
 				fclose(fle);
-				if (count != 1) continue;
+				if (count !=1) continue;
 
-				vidPath = dirName + "/" + subDir + "/product";
+				vidPath = dirName + "/"+subDir+"/product";
 				file = open(vidPath.c_str(), O_RDONLY | O_CLOEXEC);
 				if (file == -1) continue;
 				fle = fdopen(file, "r");
 				char* p;
 				if ((p = fgets(target, sizeof(target), fle))) {
-					if (p[strlen(p) - 1] == '\n') p[strlen(p) - 1] = '\0';
-					quicka2w(target, prt.productName);
+					if (p[strlen(p)-1] == '\n') p[strlen(p)-1] = '\0';
+					quicka2w(target, prt.productName); 
 				}
 				fclose(fle);
 
-				vidPath = dirName + "/" + subDir + "/serial";
+				vidPath = dirName + "/"+subDir+"/serial";
 				file = open(vidPath.c_str(), O_RDONLY | O_CLOEXEC);
 				if (file == -1) continue;
 				fle = fdopen(file, "r");
-				if ((p = fgets(target, sizeof(target), fle))) quicka2w(target, prt.instanceID);
+				if ((p = fgets(target, sizeof(target), fle))) quicka2w(target, prt.instanceID); 
 				fclose(fle);
 
 				serialPorts.push_back(prt);
@@ -359,7 +391,7 @@ void SerialIO::enumSerialPorts(std::vector<SerialPortInformation>& serialPorts) 
 
 	std::sort(serialPorts.begin(), serialPorts.end(), [](const SerialPortInformation& a, const SerialPortInformation& b)->int {
 		return a.portName < b.portName;
-		});
+	});
 }
 
 // Attempt ot change the size of the buffers used by the OS
@@ -395,21 +427,20 @@ SerialIO::Response SerialIO::openPort(const std::wstring& portName) {
 			// See if it exists
 			auto f = std::find_if(serialPorts.begin(), serialPorts.end(), [&portName](const SerialPortInformation& serialport)-> bool {
 				return portName == serialport.portName;
-				});
+			});
 
 			// was it found?
 			if (f != serialPorts.end()) {
 				switch (m_ftdi.FT_Open(f->ftdiIndex)) {
-				case FTDI::FT_STATUS::FT_OK: break;
-				case FTDI::FT_STATUS::FT_DEVICE_NOT_OPENED: Response::rInUse;
-				case FTDI::FT_STATUS::FT_DEVICE_NOT_FOUND: return Response::rNotFound;
-				default: return Response::rUnknownError;
+					case FTDI::FT_STATUS::FT_OK: break;
+					case FTDI::FT_STATUS::FT_DEVICE_NOT_OPENED: Response::rInUse;
+					case FTDI::FT_STATUS::FT_DEVICE_NOT_FOUND: return Response::rNotFound;
+					default: return Response::rUnknownError;
 				}
 				updateTimeouts();
 
 				return Response::rOK;
-			}
-			else return Response::rNotFound;
+			} else return Response::rNotFound;
 		}
 	}
 #endif
@@ -498,17 +529,17 @@ SerialIO::Response SerialIO::configurePort(const Configuration& configuration) {
 	GetCommConfig(m_portHandle, &config, &comConfigSize);
 	config.dwSize = sizeof(config);
 	config.dcb.DCBlength = sizeof(config.dcb);
-	config.dcb.BaudRate = configuration.baudRate;
-	config.dcb.ByteSize = 8;
+	config.dcb.BaudRate = configuration.baudRate;  
+	config.dcb.ByteSize = 8;       
 	config.dcb.fBinary = true;
 	config.dcb.Parity = false;
 	config.dcb.fOutxCtsFlow = configuration.ctsFlowControl;
 	config.dcb.fOutxDsrFlow = false;
-	config.dcb.fDtrControl = DTR_CONTROL_DISABLE;
+	config.dcb.fDtrControl = DTR_CONTROL_DISABLE; 
 	config.dcb.fDsrSensitivity = false;
 	config.dcb.fNull = false;
 	config.dcb.fTXContinueOnXoff = false;
-	config.dcb.fRtsControl = RTS_CONTROL_DISABLE;
+	config.dcb.fRtsControl = RTS_CONTROL_DISABLE; 
 	config.dcb.fAbortOnError = false;
 	config.dcb.StopBits = 0;
 	config.dcb.fOutX = 0;
@@ -524,13 +555,13 @@ SerialIO::Response SerialIO::configurePort(const Configuration& configuration) {
 	cfmakeraw(&term);
 #endif	
 
-	term.c_iflag &= ~(IXON | IXOFF | IXANY | IGNBRK | BRKINT | PARMRK | INPCK | ISTRIP | INLCR | IGNCR | ICRNL);
-	term.c_lflag &= ~(ISIG | ICANON | ECHO | ECHOE | ECHONL | IEXTEN);
-	term.c_oflag &= ~(OPOST | ONLCR | OCRNL | ONOCR | ONLRET);
+	term.c_iflag &= ~ (IXON | IXOFF | IXANY | IGNBRK | BRKINT | PARMRK | INPCK | ISTRIP | INLCR | IGNCR | ICRNL);
+	term.c_lflag &= ~ (ISIG | ICANON | ECHO | ECHOE | ECHONL | IEXTEN);
+	term.c_oflag &= ~ (OPOST | ONLCR | OCRNL | ONOCR | ONLRET);
 	term.c_cflag &= ~(HUPCL | CSIZE | PARENB | PARODD | CSTOPB);
 	term.c_cflag |= CREAD | CLOCAL | CS8;
 	term.c_iflag |= IGNPAR;
-
+	
 #ifdef XCASE 
 	term.c_lflag &= ~XCASE;
 #endif
@@ -579,45 +610,44 @@ SerialIO::Response SerialIO::configurePort(const Configuration& configuration) {
 	ctsRtsFlags = CRTSCTS;
 #else
 #ifdef CNEW_RTSCTS
-	ctsRtsFlags = CNEW_RTSCTS;
+	ctsRtsFlags  = CNEW_RTSCTS;
 #else
 	ctsRtsFlags = CCTS_OFLOW;
 #endif
 #endif
 
-	if (configuration.ctsFlowControl) term.c_cflag |= ctsRtsFlags; else term.c_cflag &= ~ctsRtsFlags;
+	if (configuration.ctsFlowControl) term.c_cflag |= ctsRtsFlags; else term.c_cflag &= ~ctsRtsFlags; 
 
 	// Now try to set the baud rate
 	int baud = configuration.baudRate;
 #ifdef __APPLE__
 	if (ioctl(m_portHandle, IOSSIOSPEED, &baud) == -1) return Response::rUnknownError;
 #else
-	if (baud == 9600) {
-		term.c_cflag &= ~CBAUD;
-		term.c_cflag |= B9600;
-	}
-	else {
+if (baud == 9600) {
+	term.c_cflag &= ~CBAUD;
+	term.c_cflag |= B9600;
+} else {
 #if defined(BOTHER) && defined(HAVE_STRUCT_TERMIOS2)
-		term.c_cflag &= ~CBAUD;
-		term.c_cflag |= BOTHER;
-		term.c_ispeed = configuration.baudRate;
-		term.c_ospeed = configuration.baudRate;
-		if (ioctl(m_portHandle, TCSETS2, &term) < 0) return Response::rUnknownError;
+	term.c_cflag &= ~CBAUD;
+	term.c_cflag |= BOTHER;
+	term.c_ispeed = configuration.baudRate;
+	term.c_ospeed = configuration.baudRate;
+	if (ioctl(m_portHandle, TCSETS2, &term) < 0) return Response::rUnknownError;
 #else
-		term.c_cflag &= ~CBAUD;
-		term.c_cflag |= CBAUDEX;
-		if (cfsetspeed(&term, baud) < 0) return Response::rUnknownError;
+	term.c_cflag &= ~CBAUD;
+	term.c_cflag |= CBAUDEX;
+	if (cfsetspeed(&term, baud) < 0) return Response::rUnknownError; 
 #endif
 #endif
-	}
+}
 	// Apply that nonsense
-	tcflush(m_portHandle, TCIFLUSH);
+	tcflush (m_portHandle, TCIFLUSH);
 	if (tcsetattr(m_portHandle, TCSANOW, &term) != 0) return Response::rUnknownError;
 #ifdef ASYNC_LOW_LATENCY	
 	struct serial_struct serial;
-	ioctl(m_portHandle, TIOCGSERIAL, &serial);
-	serial.flags |= ASYNC_LOW_LATENCY;
-	ioctl(m_portHandle, TIOCSSERIAL, &serial);
+	ioctl(m_portHandle, TIOCGSERIAL, &serial); 
+	serial.flags |= ASYNC_LOW_LATENCY; 
+	ioctl(m_portHandle, TIOCSSERIAL, &serial);	
 #endif
 
 	setDTR(false);
@@ -643,7 +673,7 @@ bool SerialIO::checkForOverrun() {
 #endif
 
 #ifdef _WIN32 
-	DWORD errors = 0;
+	DWORD errors=0;
 	COMSTAT comstatbuffer;
 
 	if (!ClearCommError(m_portHandle, &errors, &comstatbuffer)) return 0;
@@ -658,7 +688,7 @@ unsigned int SerialIO::getBytesWaiting() {
 	if (!isPortOpen()) return 0;
 
 #ifdef FTDI_D2XX_AVAILABLE
-	if (m_ftdi.isOpen()) {
+	if (m_ftdi.isOpen()) {		
 		DWORD queueSize = 0;
 		if (m_ftdi.FT_GetQueueStatus(&queueSize) != FTDI::FT_STATUS::FT_OK) return 0;
 		return queueSize;
@@ -716,8 +746,8 @@ unsigned int SerialIO::write(const void* data, unsigned int dataLength) {
 	// Write with a timeout
 	while (written < dataLength) {
 		if ((timeout.tv_sec < 1) && (timeout.tv_usec < 1)) break;
-
-		int result = select(m_portHandle + 1, NULL, &fds, NULL, &timeout);
+		
+		int result = select(m_portHandle + 1, NULL, &fds, NULL, &timeout);		
 		if (result < 0) {
 			if (errno == EINTR) continue; else {
 				return 0;
@@ -725,7 +755,7 @@ unsigned int SerialIO::write(const void* data, unsigned int dataLength) {
 
 		}
 		else if (result == 0) break;
-
+				
 		result = ::write(m_portHandle, buffer, dataLength - written);
 
 		if (result < 0) {
@@ -737,7 +767,7 @@ unsigned int SerialIO::write(const void* data, unsigned int dataLength) {
 		written += result;
 		buffer += result;
 	}
-
+	
 	return written;
 #endif
 
@@ -800,8 +830,8 @@ unsigned int SerialIO::read(void* data, unsigned int dataLength) {
 	}
 
 	return read;
-
-
+	
+	
 #endif
 
 	return 0;
