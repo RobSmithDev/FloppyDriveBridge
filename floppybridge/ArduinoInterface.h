@@ -79,10 +79,10 @@ namespace ArduinoFloppyReader {
 
 	// Speed at which the head will seek to a track
 	enum class TrackSearchSpeed {
-		tssSlow,
-		tssNormal,
-		tssFast,
-		tssVeryFast
+		tssSlow = 0,
+		tssNormal = 1,
+		tssFast = 2,
+		tssVeryFast = 3
 	};
 
 	// Diagnostic responses from the interface

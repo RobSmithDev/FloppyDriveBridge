@@ -136,6 +136,9 @@ private:
 	// The current track being written to (or more accurately read from WinUAE)
 	TrackToWrite m_currentWriteTrack;
 
+	// The last track that was written to, this is cylinder*2 + side
+	int m_lastWroteTo = -1;
+
 	// For extracting rotations from disks
 	RotationExtractor m_extractor;
 
@@ -144,6 +147,7 @@ private:
 
 	// If we should pause streaming data from the disk
 	bool m_delayStreaming;
+
 
 	// When the above delay started
 	std::chrono::time_point<std::chrono::steady_clock> m_delayStreamingStart;
@@ -302,7 +306,7 @@ private:
 	void resetWriteBuffer();
 
 	// Internally check the disk density
-	void internalCheckDiskDensity();
+	void internalCheckDiskDensity(bool newDiskInserted);
 
 protected:
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

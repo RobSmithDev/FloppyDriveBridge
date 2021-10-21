@@ -291,7 +291,7 @@ void CommonBridgeTemplate::mainThread() {
 			else {
 				m_writeProtected = checkWriteProtectStatus(true);
 				// Request the type of disk before we let the OS know a disk has actually been inserted
-				internalCheckDiskDensity();
+				internalCheckDiskDensity(true);
 			}
 
 			m_diskInDrive = diskInDrive;
@@ -300,11 +300,11 @@ void CommonBridgeTemplate::mainThread() {
 }
 
 // Internally check the disk density
-void CommonBridgeTemplate::internalCheckDiskDensity() {
+void CommonBridgeTemplate::internalCheckDiskDensity(bool newDiskInserted) {
 	switch (m_bridgeDensity) {
 	case BridgeDensityMode::bdmAuto:
 		// Run the test
-		if (m_diskInDrive) {
+		if (m_diskInDrive || newDiskInserted) {
 			// To do this properly we should be on track 0, lower side.
 			setCurrentCylinder(0);
 			setActiveSurface(DiskSurface::dsLower);
@@ -351,6 +351,7 @@ void CommonBridgeTemplate::resetMFMCache() {
 
 	m_writePending = false;
 	m_writeComplete = false;
+	m_lastWroteTo = -1;
 }
 
 // Save a new disk side and switch it in if it can be
@@ -585,7 +586,9 @@ void CommonBridgeTemplate::internalSwitchCylinder(const int cylinder, const Disk
 		std::lock_guard<std::mutex> lock(m_writeLockCompleteFlag);
 		m_writeCompletePending = false;
 		m_writeComplete = true;
+		m_lastWroteTo = (cylinder * 2) + ((int)side);
 	}
+	else m_lastWroteTo = -1;
 }
 
 // Get the speed at this position.  1000=100%.  
@@ -593,7 +596,15 @@ int CommonBridgeTemplate::getMFMSpeed(const int mfmPositionBits) {
 	if (!isReady()) return DRIVE_GARBAGE_SPEED;
 
 	if (m_mfmRead[m_currentTrack][(int)m_floppySide].current.ready) {
-		if (m_inHDMode || (m_bridgeMode == BridgeMode::bmTurboAmigaDOS)) return 100;
+		if (m_lastWroteTo == ((m_currentTrack * 2) + (int)m_floppySide)) {
+			// We just write to this, but to help with any re-tries, we'll slow this down
+			if (m_mfmRead[m_currentTrack][(int)m_floppySide].next.ready) m_lastWroteTo = -1; else {
+				// Force normal speed
+				return 1000;
+			}
+		}
+
+		if ((m_inHDMode) || (m_bridgeMode == BridgeMode::bmTurboAmigaDOS)) return 100;
 
 		// Get the 'bit' we're reading
 		const int mfmPositionByte = mfmPositionBits >> 3;
@@ -831,7 +842,7 @@ bool CommonBridgeTemplate::initialise() {
 		}
 		m_writeProtected = checkWriteProtectStatus(true);
 		// Request the type of disk before we let the OS know a disk has actually been inserted
-		internalCheckDiskDensity(); 
+		internalCheckDiskDensity(false); 
 
 		// Startup the thread
 		m_control = new std::thread([this]() {
@@ -970,10 +981,7 @@ void CommonBridgeTemplate::writeShortToBuffer(bool side, unsigned int track, uns
 		m_currentWriteTrack.mfmBuffer[m_currentWriteTrack.floppyBufferSizeBits >> 3] = mfmData >> 8;
 		m_currentWriteTrack.mfmBuffer[(m_currentWriteTrack.floppyBufferSizeBits >> 3) + 1] = mfmData & 0xFF;
 		m_currentWriteTrack.floppyBufferSizeBits += 16;
-	}
-	else {
-		OutputDebugStringA("Warning 2");
-	}
+	}	
 }
  
 // Return TRUE if there is data ready to be committed to disk
@@ -1020,9 +1028,6 @@ unsigned int CommonBridgeTemplate::commitWriteBuffer(bool side, unsigned int tra
 				cache->startBitPatterns.valid = false;
 			}
 		}
-	}
-	else {
-		OutputDebugStringA("WARNING");
 	}
 
 	resetWriteBuffer();

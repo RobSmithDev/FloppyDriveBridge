@@ -814,13 +814,7 @@ DiagnosticResponse ArduinoInterface::selectTrack(const unsigned char trackIndex,
 	bool isV18 = (m_version.major > 1) || ((m_version.major == 1) && (m_version.minor >= 8));
 	char buf[8];
 	if (isV18) {
-		char flags = 0;
-		switch (searchSpeed) {
-		case TrackSearchSpeed::tssNormal:   flags = 1; break;                    // Speed - 1
-		case TrackSearchSpeed::tssFast:     flags = 2; break;                    // Speed - 2
-		case TrackSearchSpeed::tssVeryFast: flags = 3; break;					// Speed - 3
-		default: break;
-		}
+		char flags = (int)searchSpeed;
 		if (!ignoreDiskInsertCheck) flags |= 4;
 #ifdef _WIN32		
 		sprintf_s(buf, "%c%02i%c", COMMAND_GOTOTRACK_REPORT, trackIndex, flags);
@@ -1373,8 +1367,7 @@ inline int readBit(const unsigned char* buffer, const unsigned int maxLength, in
 			bit = 7;
 			pos++;
 		}
-		// Prevent two '1's in a row at the end of the reading
-		return (((buffer[maxLength-1] & 1)!=0) ^ ((bit & 1)!=0)) ? 1 : 0;
+		return (bit & 1) ? 0 : 1;
 	}
 
 	int ret = (buffer[pos] >> bit) & 1;
