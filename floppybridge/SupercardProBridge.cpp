@@ -22,18 +22,18 @@ using namespace SuperCardPro;
 
 
 static const FloppyDiskBridge::BridgeDriver DriverSupercardProFloppy = {
-	"SuperCard Pro", "https://www.cbmstuff.com/", "Jim Drew", "RobSmithDev", CONFIG_OPTIONS_COMPORT | CONFIG_OPTIONS_COMPORT_AUTODETECT | CONFIG_OPTIONS_DRIVE_AB
+	"SuperCard Pro", "https://www.cbmstuff.com/", "Jim Drew", "RobSmithDev", CONFIG_OPTIONS_COMPORT | CONFIG_OPTIONS_COMPORT_AUTODETECT | CONFIG_OPTIONS_DRIVE_AB | CONFIG_OPTIONS_SMARTSPEED | CONFIG_OPTIONS_AUTOCACHE
 };
 
 
 // Flags from WINUAE
-SupercardProDiskBridge::SupercardProDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool autoDetectComPort, char* comPort, bool driveOnB) :
-	CommonBridgeTemplate(bridgeMode, bridgeDensity), m_comPort(autoDetectComPort ? comPort : ""), m_useDriveA(!driveOnB) {
+SupercardProDiskBridge::SupercardProDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, bool driveOnB) :
+	CommonBridgeTemplate(bridgeMode, bridgeDensity, enableAutoCache, useSmartSpeed), m_comPort(autoDetectComPort ? comPort : ""), m_useDriveA(!driveOnB) {
 }
 
 // This is for the static version
 SupercardProDiskBridge::SupercardProDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings) :
-	CommonBridgeTemplate(bridgeMode, bridgeDensity), m_useDriveA((uaeSettings & 0x0F) == 0), m_comPort("") {
+	CommonBridgeTemplate(bridgeMode, bridgeDensity, false, false), m_useDriveA((uaeSettings & 0x0F) == 0), m_comPort("") {
 }
 
 

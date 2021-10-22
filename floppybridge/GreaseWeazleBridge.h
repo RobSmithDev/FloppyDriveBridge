@@ -115,7 +115,7 @@ protected:
 	virtual bool attemptToDetectDiskChange() override;
 
 public:
-	GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool autoDetectComPort, char* comPort, bool driveOnB);
+	GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, bool driveOnB);
 
 	// This is for the static version
 	GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings);

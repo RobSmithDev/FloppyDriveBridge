@@ -114,7 +114,7 @@ protected:
 	virtual bool attemptToDetectDiskChange() override;
 
 public:
-	SupercardProDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool autoDetectComPort, char* comPort, bool driveOnB);
+	SupercardProDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, bool driveOnB);
 
 	// This is for the static version
 	SupercardProDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings);

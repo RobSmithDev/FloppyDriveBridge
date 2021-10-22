@@ -102,7 +102,7 @@ public:
 	bool autoDetectComPort = true;
 	bool driveCableIsB = false;
 	bool autoCache = false;
-	bool smartSpeed = true;
+	bool smartSpeed = false;
 
 	// Seiralising into a nice string
 	bool fromString(char* string);

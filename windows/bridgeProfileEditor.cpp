@@ -64,7 +64,7 @@ void BridgeProfileEditor::handleDrawListBox(PDRAWITEMSTRUCT item) {
 	}
 
 	FloppyDiskBridge::BridgeDriver* info;
-	if (handleGetDriverInfo(item->itemData, &info)) {
+	if (handleGetDriverInfo((unsigned int)item->itemData, &info)) {
 
 		HGDIOBJ oldBmp = SelectObject(m_hdcTemp, m_bridgeLogos[item->itemData]);
 		int bitmapSize = 66;
@@ -86,12 +86,12 @@ void BridgeProfileEditor::handleDrawListBox(PDRAWITEMSTRUCT item) {
 
 		char buffer[128];
 		sprintf_s(buffer, "%s (%s)", info->name, info->manufacturer);
-		rec.top += DrawTextA(item->hDC, buffer, strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
+		rec.top += DrawTextA(item->hDC, buffer, (int)strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
 		if (item->rcItem.bottom - item->rcItem.top >= 66) {
 			sprintf_s(buffer, "URL: %s", info->url);
-			rec.top += DrawTextA(item->hDC, buffer, strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
+			rec.top += DrawTextA(item->hDC, buffer, (int)strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
 			sprintf_s(buffer, "Driver by %s", info->driverAuthor);
-			rec.top += DrawTextA(item->hDC, buffer, strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
+			rec.top += DrawTextA(item->hDC, buffer, (int)strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
 		}
 
 		if (((item->itemState & (ODS_FOCUS | ODS_SELECTED)) == (ODS_FOCUS | ODS_SELECTED))) {
@@ -201,7 +201,7 @@ INT_PTR BridgeProfileEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam
 		if ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL)) {
 			SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
 			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE));
-			return (LONG)GetSysColorBrush(COLOR_BTNFACE);  // Should be TRUE but doesnt work right unless its this!?!
+			return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);  // Should be TRUE but doesnt work right unless its this!?!
 		}
 		break;
 
@@ -290,8 +290,8 @@ void BridgeProfileEditor::handleInitDialog(HWND hwnd) {
 	w = GetDlgItem(hwnd, IDC_DRIVER);
 	for (unsigned int index = 0; index < MAX_NUM_DRIVERS; index++) {
 		if (handleGetDriverInfo(index, &driver)) {
-			int pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)driver->name);
-			SendMessage(w, CB_SETITEMDATA, pos, (LPARAM)index);
+			LRESULT pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)driver->name);
+			SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, (LPARAM)index);
 		}
 	}
 	SendMessage(w, CB_SETCURSEL, m_profile->bridgeIndex, 0);
@@ -299,12 +299,12 @@ void BridgeProfileEditor::handleInitDialog(HWND hwnd) {
 	w = GetDlgItem(hwnd, IDC_COMPORT);
 	// Populate list of COM ports and select it
 	for (unsigned int index = 0; index < m_portList.size(); index++) {
-		int pos;
+		LRESULT pos;
 		if ((index == 0) && (m_notDetected)) {
 			std::wstring tmp = m_portList[index].portName + L" (not detected)";
 			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)tmp.c_str());
 		} else pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)m_portList[index].portName.c_str());
-		SendMessage(w, CB_SETITEMDATA, pos, (LPARAM)index);
+		SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, (LPARAM)index);
 	}
 	if (strlen(m_profile->comPortToUse)) {
 		std::string port = m_profile->comPortToUse;
@@ -323,10 +323,10 @@ void BridgeProfileEditor::handleInitDialog(HWND hwnd) {
 
 	// Mode
 	w = GetDlgItem(hwnd, IDC_MODE);
-	int pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Normal"); SendMessage(w, CB_SETITEMDATA, pos, 0);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"More Compatible (different rotation calculation)"); SendMessage(w, CB_SETITEMDATA, pos, 1);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Turbo (Very fast, may break copy protection)"); SendMessage(w, CB_SETITEMDATA, pos, 2);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Stalling (Accurate but will freeze the emulator)"); SendMessage(w, CB_SETITEMDATA, pos, 3);
+	LPARAM pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Normal"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"More Compatible (different rotation calculation)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Turbo (Very fast, may break copy protection)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 2);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Stalling (Accurate but will freeze the emulator)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 3);
 	SendMessage(w, CB_SETCURSEL, (WPARAM)m_profile->bridgeMode, 0);
 
 	// Smart Speed
@@ -339,15 +339,15 @@ void BridgeProfileEditor::handleInitDialog(HWND hwnd) {
 
 	// Disk Type
 	w = GetDlgItem(hwnd, IDC_DISKTYPE);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Auto (automatically detect DD and HD disks)"); SendMessage(w, CB_SETITEMDATA, pos, 0);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"DD (always detect all disks as double density)"); SendMessage(w, CB_SETITEMDATA, pos, 1);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"HD (always detect all disks as high density)"); SendMessage(w, CB_SETITEMDATA, pos, 2);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Auto (automatically detect DD and HD disks)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"DD (always detect all disks as double density)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"HD (always detect all disks as high density)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 2);
 	SendMessage(w, CB_SETCURSEL, (WPARAM)m_profile->bridgeDensity, 0);
 
 	// Cable select
 	w = GetDlgItem(hwnd, IDC_CABLE);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Drive Connected as A"); SendMessage(w, CB_SETITEMDATA, pos, 0);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Drive Connected as B"); SendMessage(w, CB_SETITEMDATA, pos, 1);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Drive Connected as A"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
+	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Drive Connected as B"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
 	SendMessage(w, CB_SETCURSEL, (WPARAM)m_profile->driveCableIsB?1:0, 0);
 
 	onDriverSelected();

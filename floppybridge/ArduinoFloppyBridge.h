@@ -123,7 +123,7 @@ protected:
 	virtual bool attemptToDetectDiskChange() override;
 
 public:
-	ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool autoDetectComPort, char* comPort);
+	ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort);
 
 	// This is for the static version
 	ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings);

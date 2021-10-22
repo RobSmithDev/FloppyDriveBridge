@@ -42,15 +42,15 @@ void BridgeProfileListEditor::handleCreateProfile() {
 	if (editor.doModal()) {
 		HWND hwndList = GetDlgItem(m_dialogBox, IDC_LIST1);
 
-		int pos = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)profile->profileName);
+		LRESULT pos = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)profile->profileName);
 
 		// Work out a new profile ID
 		unsigned int profileID = 1;
 		while (m_profileList.find(profileID) != m_profileList.end()) profileID++;
 		m_profileList.insert(std::make_pair(profileID, profile));
 
-		SendMessage(hwndList, LB_SETITEMDATA, pos, (LPARAM)profileID);
-		SendMessage(hwndList, LB_SETCURSEL, pos, 0);
+		SendMessage(hwndList, LB_SETITEMDATA, (WPARAM)pos, (LPARAM)profileID);
+		SendMessage(hwndList, LB_SETCURSEL, (WPARAM)pos, 0);
 	}
 	else delete profile;
 }
@@ -136,7 +136,7 @@ void BridgeProfileListEditor::redrawSelectedItem() {
 void BridgeProfileListEditor::handleDrawListBox(PDRAWITEMSTRUCT item) {
 	if (!item) return;
 
-	auto f = m_profileList.find(item->itemData);
+	auto f = m_profileList.find((unsigned int)item->itemData);
 	if (f == m_profileList.end()) return;
 
 	if (item->itemState & ODS_SELECTED) {
@@ -176,16 +176,16 @@ void BridgeProfileListEditor::handleDrawListBox(PDRAWITEMSTRUCT item) {
 		m_boldFont = CreateFontIndirect(&logFont);
 	}
 	HGDIOBJ oldFont = SelectObject(item->hDC, m_boldFont);
-	rec.top += DrawTextA(item->hDC, f->second->profileName, strlen(f->second->profileName), &rec, DT_LEFT | DT_NOPREFIX) + 5;
+	rec.top += DrawTextA(item->hDC, f->second->profileName, (int)strlen(f->second->profileName), &rec, DT_LEFT | DT_NOPREFIX) + 5;
 	SelectObject(item->hDC, oldFont);
 
 	char buffer[128];
 	sprintf_s(buffer, "%s (%s)", info->name, info->manufacturer);
-	rec.top += DrawTextA(item->hDC, buffer, strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
+	rec.top += DrawTextA(item->hDC, buffer, (int)strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
 	sprintf_s(buffer, "URL: %s", info->url);
-	rec.top += DrawTextA(item->hDC, buffer, strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
+	rec.top += DrawTextA(item->hDC, buffer, (int)strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
 	sprintf_s(buffer, "Driver by %s", info->driverAuthor);
-	rec.top += DrawTextA(item->hDC, buffer, strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
+	rec.top += DrawTextA(item->hDC, buffer, (int)strlen(buffer), &rec, DT_LEFT | DT_NOPREFIX);
 
 	if (((item->itemState & (ODS_FOCUS|ODS_SELECTED))== (ODS_FOCUS | ODS_SELECTED))) {
 		rec = item->rcItem;
@@ -213,7 +213,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			if ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_PROFILELIST_URL)) {
 				SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
 				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE));
-				return (LONG)GetSysColorBrush(COLOR_BTNFACE);  // Should be TRUE but doesnt work right unless its this!?!
+				return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);  // Should be TRUE but doesnt work right unless its this!?!
 			}
 			break;
 
@@ -313,8 +313,8 @@ void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 	// Populate the list
 	w = GetDlgItem(hwnd, IDC_LIST1);
 	for (auto& f : m_profileList) {
-		int pos = SendMessage(w, LB_ADDSTRING, 0, (LPARAM)f.second->profileName);
-		SendMessage(w, LB_SETITEMDATA, pos, (LPARAM)f.first);
+		LRESULT pos = SendMessage(w, LB_ADDSTRING, 0, (LPARAM)f.second->profileName);
+		SendMessage(w, LB_SETITEMDATA, (WPARAM)pos, (LPARAM)f.first);
 	}
 	
 	EnableWindow(GetDlgItem(m_dialogBox, IDEDIT), FALSE);

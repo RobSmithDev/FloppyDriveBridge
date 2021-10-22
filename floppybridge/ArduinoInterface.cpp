@@ -831,7 +831,7 @@ DiagnosticResponse ArduinoInterface::selectTrack(const unsigned char trackIndex,
 	}
 
 	// Send track number. 
-	if (!deviceWrite(buf, strlen(buf))) {
+	if (!deviceWrite(buf, (unsigned int)strlen(buf))) {
 		m_lastError = DiagnosticResponse::drSendFailed;
 		return m_lastError;
 	}
@@ -1305,7 +1305,7 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 					}
 				}
 				else
-					if ((extractor.totalTimeReceived() > (m_isHDMode ? 600000000 : 400000000)) && (noDataCounter > 100)) {
+					if ((extractor.totalTimeReceived() > (m_isHDMode ? 600000000U : 400000000U)) && (noDataCounter > 100)) {
 						// No data, stop
 						abortReadStreaming();
 						noDataCounter = 0;

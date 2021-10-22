@@ -40,18 +40,17 @@
 
 
 static const FloppyDiskBridge::BridgeDriver DriverArduinoFloppy = {
-	"DrawBridge aka Arduino Reader/Writer", "https://amiga.robsmithdev.co.uk", "RobSmithDev", "RobSmithDev", CONFIG_OPTIONS_COMPORT | CONFIG_OPTIONS_COMPORT_AUTODETECT
+	"DrawBridge aka Arduino Reader/Writer", "https://amiga.robsmithdev.co.uk", "RobSmithDev", "RobSmithDev", CONFIG_OPTIONS_COMPORT | CONFIG_OPTIONS_COMPORT_AUTODETECT | CONFIG_OPTIONS_SMARTSPEED | CONFIG_OPTIONS_AUTOCACHE
 };
 
 // Flags from WINUAE
-ArduinoFloppyDiskBridge::ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool autoDetectComPort, char* comPort) :
-	CommonBridgeTemplate(bridgeMode, bridgeDensity), m_comPort(autoDetectComPort ? "" : comPort) {
-	//m_comPort(device_settings) {
+ArduinoFloppyDiskBridge::ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort) :
+	CommonBridgeTemplate(bridgeMode, bridgeDensity, enableAutoCache, useSmartSpeed), m_comPort(autoDetectComPort ? "" : comPort) {
 }
 
 // This is for the static version
 ArduinoFloppyDiskBridge::ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings) : 
-	CommonBridgeTemplate(bridgeMode, bridgeDensity) {
+	CommonBridgeTemplate(bridgeMode, bridgeDensity, false, false) {
 
 	if (uaeSettings > 0) {
 		char buffer[20];

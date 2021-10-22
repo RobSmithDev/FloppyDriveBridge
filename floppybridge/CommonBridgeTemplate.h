@@ -173,6 +173,9 @@ private:
 
 		// Size fo the mfm data we actually have (in bits) so far
 		int amountReadInBits;
+
+		// If the data on this track looks like it should support smart speed
+		bool supportsSmartSpeed;
 	};
 
 	// Current disk cache history
@@ -202,6 +205,14 @@ private:
 	// If we're currently in HD mode
 	bool m_inHDMode;
 
+	// Enables auto-caching in the background while the drive is idle
+	bool m_shouldAutoCache;
+
+	// Auto-cache data
+	std::chrono::time_point<std::chrono::steady_clock> m_autoCacheMotorStart;
+	bool m_autoCacheMotorStatus;
+	bool m_autocacheModifiedCurrentCylinder;
+
 	// The track we tell WinUAE we're on
 	int m_currentTrack;
 
@@ -225,6 +236,9 @@ private:
 
 	// This is set to TRUE to inform the system we're going to read the first cylinder (both sides) before we officially tell UAE the drive is ready.
 	bool m_firstTrackMode;
+
+	// If Smart Speed should be used
+	bool m_useSmartSpeed;
 
 	// Set to true while the motor is spinning up, but not there yet
 	bool m_motorSpinningUp;
@@ -269,6 +283,15 @@ private:
 	// The side we're actually on
 	DiskSurface m_actualFloppySide;
 
+	// If it returns TRUE, this is the next cylinder and side that should be cached in the background
+	bool getNextTrackToAutoCache(int& cylinder, DiskSurface& side);
+
+	// Manage motor status
+	void internalSetMotorStatus(bool enabled);
+
+	// Handle caching track data in the background
+	void handleBackgroundCaching();
+
 	// The main thread
 	void mainThread();
 
@@ -307,6 +330,9 @@ private:
 
 	// Internally check the disk density
 	void internalCheckDiskDensity(bool newDiskInserted);
+
+	// Scans the MFM data to see if this track should allow smart speed or not based on timing data
+	void checkSmartSpeed(const int cylinder, const DiskSurface side, MFMCache& track);
 
 protected:
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -393,7 +419,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
 	// Flags from WINUAE
-	CommonBridgeTemplate(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity);
+	CommonBridgeTemplate(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool shouldAutoCache, bool useSmartSpeed);
 	virtual ~CommonBridgeTemplate();
 
 	// Change to a different bridge-mode (in real-time)

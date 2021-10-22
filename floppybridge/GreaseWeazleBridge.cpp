@@ -7,7 +7,7 @@
 * are maintained from by GitHub repo at
 * https://github.com/RobSmithDev/FloppyDriveBridge
 */
-
+ 
 #include "floppybridge_config.h"
 
 #ifdef ROMTYPE_GREASEWEAZLEREADER_WRITER
@@ -22,18 +22,17 @@ using namespace GreaseWeazle;
 
 
 static const FloppyDiskBridge::BridgeDriver DriverGreaseweazleFloppy = {
-	"Greaseweazle", "https://github.com/keirf/Greaseweazle", "Keir Fraser", "RobSmithDev", CONFIG_OPTIONS_COMPORT | CONFIG_OPTIONS_COMPORT_AUTODETECT | CONFIG_OPTIONS_DRIVE_AB
+	"Greaseweazle", "https://github.com/keirf/Greaseweazle", "Keir Fraser", "RobSmithDev", CONFIG_OPTIONS_COMPORT | CONFIG_OPTIONS_COMPORT_AUTODETECT | CONFIG_OPTIONS_DRIVE_AB | CONFIG_OPTIONS_SMARTSPEED | CONFIG_OPTIONS_AUTOCACHE
 };
 
 // Flags from WINUAE
-GreaseWeazleDiskBridge::GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool autoDetectComPort, char* comPort, bool driveOnB) :
-	CommonBridgeTemplate(bridgeMode, bridgeDensity), m_useDriveA(!driveOnB), m_comPort(autoDetectComPort ? "" : comPort) {
-	//, m_useDriveA((device_settings & 0x0F) == 0) {
+GreaseWeazleDiskBridge::GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, bool driveOnB) :
+	CommonBridgeTemplate(bridgeMode, bridgeDensity, enableAutoCache, useSmartSpeed), m_useDriveA(!driveOnB), m_comPort(autoDetectComPort ? "" : comPort) {
 }
 
 // This is for the static version
 GreaseWeazleDiskBridge::GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings) :
-	CommonBridgeTemplate(bridgeMode, bridgeDensity), m_useDriveA((uaeSettings & 0x0F) == 0), m_comPort("") {
+	CommonBridgeTemplate(bridgeMode, bridgeDensity, false, false), m_useDriveA((uaeSettings & 0x0F) == 0), m_comPort("") {
 }
 
 

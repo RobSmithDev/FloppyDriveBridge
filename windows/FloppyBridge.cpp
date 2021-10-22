@@ -99,7 +99,6 @@ bool BridgeConfig::fromString(char* serialisedOptions) {
 
     // Validate its for this bridge
     bridgeIndex = atoi(params[0].c_str());
-    //if (atoi(params[0].c_str()) != bridgeIndex) return false;
 
     unsigned int i = atoi(params[1].c_str());
     autoCache = (i & 1) != 0;
@@ -199,7 +198,7 @@ extern "C" {
 
         if (!outputLength) return false;
 
-        unsigned int lengthRequired = 1; // final null terminator
+        size_t lengthRequired = 1; // final null terminator
         std::string tmp;
         for (const SerialIO::SerialPortInformation& port : serialports) {
             quickw2a(port.portName, tmp);
@@ -229,7 +228,7 @@ extern "C" {
             return true;
         }
         else {
-            *outputLength = lengthRequired;
+            *outputLength = (unsigned int)lengthRequired;
             return false;
         }
     }
@@ -319,7 +318,7 @@ extern "C" {
         }
 
         *profiles = profileCache;
-        *numProfiles = profileList.size();
+        *numProfiles = (unsigned int)profileList.size();
         return true;
     }
 
@@ -530,9 +529,9 @@ extern "C" {
         memset(bridgeDriverHandle->lastMessage, 0, sizeof(bridgeDriverHandle->lastMessage));
 
         switch (bridgeDriverHandle->config.bridgeIndex) {
-        case 0: bridgeDriverHandle->bridge = new ArduinoFloppyDiskBridge(bridgeDriverHandle->config.bridgeMode, bridgeDriverHandle->config.bridgeDensity, bridgeDriverHandle->config.autoDetectComPort, bridgeDriverHandle->config.comPortToUse); break;
-        case 1: bridgeDriverHandle->bridge = new GreaseWeazleDiskBridge(bridgeDriverHandle->config.bridgeMode, bridgeDriverHandle->config.bridgeDensity, bridgeDriverHandle->config.autoDetectComPort, bridgeDriverHandle->config.comPortToUse, bridgeDriverHandle->config.driveCableIsB); break;
-        case 2: bridgeDriverHandle->bridge = new SupercardProDiskBridge(bridgeDriverHandle->config.bridgeMode, bridgeDriverHandle->config.bridgeDensity, bridgeDriverHandle->config.autoDetectComPort, bridgeDriverHandle->config.comPortToUse, bridgeDriverHandle->config.driveCableIsB); break;
+        case 0: bridgeDriverHandle->bridge = new ArduinoFloppyDiskBridge(bridgeDriverHandle->config.bridgeMode, bridgeDriverHandle->config.bridgeDensity, bridgeDriverHandle->config.autoCache, bridgeDriverHandle->config.smartSpeed, bridgeDriverHandle->config.autoDetectComPort, bridgeDriverHandle->config.comPortToUse); break;
+        case 1: bridgeDriverHandle->bridge = new GreaseWeazleDiskBridge(bridgeDriverHandle->config.bridgeMode, bridgeDriverHandle->config.bridgeDensity, bridgeDriverHandle->config.autoCache, bridgeDriverHandle->config.smartSpeed, bridgeDriverHandle->config.autoDetectComPort, bridgeDriverHandle->config.comPortToUse, bridgeDriverHandle->config.driveCableIsB); break;
+        case 2: bridgeDriverHandle->bridge = new SupercardProDiskBridge(bridgeDriverHandle->config.bridgeMode, bridgeDriverHandle->config.bridgeDensity, bridgeDriverHandle->config.autoCache, bridgeDriverHandle->config.smartSpeed, bridgeDriverHandle->config.autoDetectComPort, bridgeDriverHandle->config.comPortToUse, bridgeDriverHandle->config.driveCableIsB); break;
         default: return false;
         }
 
