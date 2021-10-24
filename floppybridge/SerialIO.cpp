@@ -122,7 +122,7 @@ void SerialIO::setRTS(bool enableRTS) {
 	EscapeCommFunction(m_portHandle, enableRTS ? SETRTS : CLRRTS);
 #else
 	int pinToControl = TIOCM_RTS;
-	ioctl(m_portHandle, enableDTR ? TIOCMBIS : TIOCMBIC, &pinToControl);
+	ioctl(m_portHandle, enableRTS ? TIOCMBIS : TIOCMBIC, &pinToControl);
 #endif
 }
 
@@ -433,7 +433,7 @@ SerialIO::Response SerialIO::openPort(const std::wstring& portName) {
 			if (f != serialPorts.end()) {
 				switch (m_ftdi.FT_Open(f->ftdiIndex)) {
 					case FTDI::FT_STATUS::FT_OK: break;
-					case FTDI::FT_STATUS::FT_DEVICE_NOT_OPENED: Response::rInUse;
+					case FTDI::FT_STATUS::FT_DEVICE_NOT_OPENED: return Response::rInUse;
 					case FTDI::FT_STATUS::FT_DEVICE_NOT_FOUND: return Response::rNotFound;
 					default: return Response::rUnknownError;
 				}
@@ -535,11 +535,11 @@ SerialIO::Response SerialIO::configurePort(const Configuration& configuration) {
 	config.dcb.Parity = false;
 	config.dcb.fOutxCtsFlow = configuration.ctsFlowControl;
 	config.dcb.fOutxDsrFlow = false;
-	config.dcb.fDtrControl = DTR_CONTROL_DISABLE; 
+	config.dcb.fDtrControl = DTR_CONTROL_ENABLE; 
 	config.dcb.fDsrSensitivity = false;
 	config.dcb.fNull = false;
 	config.dcb.fTXContinueOnXoff = false;
-	config.dcb.fRtsControl = RTS_CONTROL_DISABLE; 
+	config.dcb.fRtsControl = RTS_CONTROL_ENABLE; 
 	config.dcb.fAbortOnError = false;
 	config.dcb.StopBits = 0;
 	config.dcb.fOutX = 0;
@@ -603,7 +603,7 @@ SerialIO::Response SerialIO::configurePort(const Configuration& configuration) {
 #endif
 
 	term.c_cc[VMIN] = 1;
-	term.c_cc[VTIME] = 3;
+	term.c_cc[VTIME] = 1;
 
 	int ctsRtsFlags = 0;
 #ifdef CRTSCTS
@@ -650,8 +650,8 @@ if (baud == 9600) {
 	ioctl(m_portHandle, TIOCSSERIAL, &serial);	
 #endif
 
-	setDTR(false);
-	setRTS(false);
+	setDTR(true);
+	setRTS(true);
 
 
 	return Response::rOK;

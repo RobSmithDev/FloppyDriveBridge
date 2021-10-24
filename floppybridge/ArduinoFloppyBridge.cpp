@@ -274,6 +274,23 @@ CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readData(RotationExt
 			return onRotation(*mfmData, dataLengthInBits);
 		});
 
+	// Retry
+	if (result == ArduinoFloppyReader::DiagnosticResponse::drError) {
+		result = m_io.readRotation(rotationExtractor, maxBufferSize, buffer, indexMarker,
+			[&onRotation](RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits) -> bool {
+				return onRotation(*mfmData, dataLengthInBits);
+			});
+	}
+
+	// Retry
+	if (result == ArduinoFloppyReader::DiagnosticResponse::drError) {
+		result = m_io.readRotation(rotationExtractor, maxBufferSize, buffer, indexMarker,
+			[&onRotation](RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits) -> bool {
+				return onRotation(*mfmData, dataLengthInBits);
+			});
+		if (result == ArduinoFloppyReader::DiagnosticResponse::drError) result = ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive;
+	}
+
 	switch (result) {
 		case ArduinoFloppyReader::DiagnosticResponse::drOK: return ReadResponse::rrOK;
 		case ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive: return ReadResponse::rrNoDiskInDrive;

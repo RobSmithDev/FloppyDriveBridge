@@ -53,7 +53,7 @@ HINSTANCE hInstance;
 
 
 
-static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021 Robert Smith (@RobSmithDev)", "https://amiga.robsmithdev.co.uk/winuae", 0, 8, 1, 0, 0};
+static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021 Robert Smith (@RobSmithDev)", "https://amiga.robsmithdev.co.uk/winuae", 0, 9, 1, 0, 0};
 static bool hasUpdateChecked = false;
 std::vector<SerialIO::SerialPortInformation> serialports;
 std::vector<HBITMAP> bridgeLogos;

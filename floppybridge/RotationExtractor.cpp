@@ -330,6 +330,7 @@ bool RotationExtractor::extractRotation(MFMSample* output, unsigned int& outputB
 			m_revolutionTime = rTime;
 			m_revolutionTimeNearlyComplete = (unsigned int)(m_revolutionTime * 0.9f);
 		}
+		m_timeReceived -= rTime;
 
 		// Calculate how much we wrote
 		outputBits = (outputStreamPos * 8) + outputStreamBit;
@@ -362,6 +363,7 @@ bool RotationExtractor::extractRotation(MFMSample* output, unsigned int& outputB
 		for (unsigned int pos = 0; pos < nextRevolutionStart; pos++) {
 			const MFMSequenceInfo& sequence = m_sequences[(pos + indexPosition) % nextRevolutionStart];
 			m_currentTime -= (unsigned int)sequence.timeNS;
+			m_timeReceived -= (unsigned int)sequence.timeNS;
 
 #ifdef OUTPUT_TIME_IN_NS
 			const unsigned int bitTime = sequence.timeNS / ((unsigned int)sequence.mfm + 2);

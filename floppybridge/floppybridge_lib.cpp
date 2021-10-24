@@ -19,6 +19,9 @@
 #include <codecvt>
 #include <locale>
 #include <algorithm>
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 
 // Used by BRIDGE_About

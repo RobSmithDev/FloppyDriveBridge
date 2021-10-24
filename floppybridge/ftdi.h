@@ -27,6 +27,8 @@
 
 #define FTDI_D2XX_AVAILABLE
 
+#ifdef FTDI_D2XX_AVAILABLE
+
 namespace FTDI {	
 
 
@@ -34,8 +36,12 @@ namespace FTDI {
 #include <Windows.h>
 #else
 #include <dlfcn.h>
+#include <stdint.h>
 #ifndef DWORD
 #define DWORD uint32_t
+#endif
+#ifndef LPDWORD
+#define LPDWORD uint32_t*
 #endif
 #ifndef ULONG
 #define ULONG uint32_t
@@ -49,12 +55,24 @@ namespace FTDI {
 #ifndef UCHAR
 #define UCHAR unsigned char
 #endif
+#ifndef USHORT
+#define USHORT uint16_t
+#endif
+#ifndef LPVOID
+#define LPVOID void*
+#endif
+#ifndef LPOVERLAPPED
+#define LPOVERLAPPED void*
+#endif
+#ifndef PCHAR
+#define PCHAR char*
+#endif
 #endif
 
-	typedef void* FT_HANDLE;
+	typedef ULONG FT_HANDLE;
 
 	// Device status
-	enum class FT_STATUS : ULONG {
+	enum class FT_STATUS : DWORD {
 		FT_OK = 0,
 		FT_INVALID_HANDLE = 1,
 		FT_DEVICE_NOT_FOUND = 2,
@@ -203,9 +221,9 @@ namespace FTDI {
 		bool isOpen() const { return m_handle != 0; };
 
 		FT_STATUS FT_Open(int deviceNumber);
-		FT_STATUS FT_OpenEx(PVOID pArg1, DWORD Flags);
+		FT_STATUS FT_OpenEx(LPVOID pArg1, DWORD Flags);
 
-		FT_STATUS FT_ListDevices(PVOID pArg1, PVOID pArg2, DWORD Flags);
+		FT_STATUS FT_ListDevices(LPVOID pArg1, LPVOID pArg2, DWORD Flags);
 
 		FT_STATUS FT_Close();
 
@@ -236,7 +254,7 @@ namespace FTDI {
 		FT_STATUS FT_Purge(bool purgeRX, bool purgeTX);
 
 
-		FT_STATUS FT_SetEventNotification(DWORD Mask, PVOID Param);
+		FT_STATUS FT_SetEventNotification(DWORD Mask,LPVOID Param);
 		FT_STATUS FT_GetEventStatus(DWORD* dwEventDWord);
 		FT_STATUS FT_GetStatus(DWORD* dwRxBytes, DWORD* dwTxBytes, DWORD* dwEventDWord);
 
@@ -259,4 +277,5 @@ namespace FTDI {
 	};
 };
 
+#endif
 #endif

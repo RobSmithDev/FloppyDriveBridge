@@ -72,6 +72,7 @@ using namespace ArduinoFloppyReader;
 #define COMMAND_READTRACKSTREAM_HIGHPRECISION 'F' // Requires Firmware V1.9
 #define COMMAND_EEPROM_READ        'E'    // Read a value from the eeprom
 #define COMMAND_EEPROM_WRITE       'e'    // Write a value to the eeprom
+#define COMMAND_RESET              'R'    // Reset
 
 #define SPECIAL_ABORT_CHAR		   'x'
 
@@ -207,8 +208,7 @@ DiagnosticResponse ArduinoInterface::checkIfDiskIsWriteProtected(bool forceCheck
 
 // This only works normally after the motor has been stepped in one direction or another.  This requires the 'advanced' configuration
 DiagnosticResponse ArduinoInterface::checkForDisk(bool forceCheck) {
-	// Test manually
-	LastCommand lc = m_lastCommand;
+	// Test manually	
 	m_lastCommand = LastCommand::lcCheckDiskInDrive;
 
 	if (!forceCheck) {
@@ -263,9 +263,9 @@ DiagnosticResponse ArduinoInterface::guessPlusMode(bool &isProbablyPlus) {
 	m_lastCommand = LastCommand::lcRunDiagnostics;
 
 	// Port opned.  We need to check what happens as the pin is toggled
-	char response;
+	char response = '0';
 	m_lastError = runCommand(COMMAND_DIAGNOSTICS, '6', &response);
-	isProbablyPlus = response != '0';
+	isProbablyPlus = (response != '0');
 
 	if (m_lastError == DiagnosticResponse::drError) m_lastError = DiagnosticResponse::drOK;
 
@@ -365,10 +365,11 @@ DiagnosticResponse ArduinoInterface::attemptToSync(std::string& versionString, S
 
 	// Send 'Version' Request 
 	buffer[0] = SPECIAL_ABORT_CHAR;
-	buffer[1] = COMMAND_VERSION;
+	buffer[1] = COMMAND_RESET;   // Reset
+	buffer[2] = COMMAND_VERSION;
 
-	unsigned long size = port.write(&buffer[0], 2);
-	if (size != 2) {
+	unsigned long size = port.write(&buffer[0], 3);
+	if (size != 3) {
 		// Couldn't write to device
 		port.closePort();
 		return DiagnosticResponse::drPortError;
@@ -385,6 +386,7 @@ DiagnosticResponse ArduinoInterface::attemptToSync(std::string& versionString, S
 		bytesRead += size;
 		// Was something read?
 		if (size) {
+			
 			if ((buffer[0] == '1') && (buffer[1] == 'V') && ((buffer[2] >= '1') && (buffer[2] <= '9')) && ((buffer[3] == ',') || (buffer[3] == '.')) && ((buffer[4] >= '0') && (buffer[4] <= '9'))) {
 
 				// Success
@@ -393,6 +395,8 @@ DiagnosticResponse ArduinoInterface::attemptToSync(std::string& versionString, S
 				port.purgeBuffers();
 				versionString = &buffer[1];
 				return DiagnosticResponse::drOK;
+			} else {
+				if (bytesRead) bytesRead--;
 			}
 
 			// Move backwards
@@ -425,7 +429,6 @@ DiagnosticResponse ArduinoInterface::attemptToSync(std::string& versionString, S
 
 // Attempts to verify if the reader/writer is running on this port
 DiagnosticResponse ArduinoInterface::internalOpenPort(const std::wstring& portName, bool enableCTSflowcontrol, bool triggerReset, std::string& versionString, SerialIO& port) {
-
 	switch (port.openPort(portName)) {
 	case SerialIO::Response::rInUse:return DiagnosticResponse::drPortInUse;
 	case SerialIO::Response::rNotFound:return DiagnosticResponse::drPortNotFound;
@@ -449,14 +452,14 @@ DiagnosticResponse ArduinoInterface::internalOpenPort(const std::wstring& portNa
 	if (response != DiagnosticResponse::drOK) {
 		// It failed.  Issue a reset if we're allowed and try again
 		if (triggerReset) {
-			port.setDTR(true);
-			port.setRTS(true);
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			port.setDTR(false);
 			port.setRTS(false);
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			port.setDTR(true);
+			port.setRTS(true);
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			port.closePort();
-			std::this_thread::sleep_for(std::chrono::milliseconds(250));
+			std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
 			// Now re-connect and try again
 			if (port.openPort(portName) != SerialIO::Response::rOK) return DiagnosticResponse::drPortError;
@@ -471,7 +474,8 @@ DiagnosticResponse ArduinoInterface::internalOpenPort(const std::wstring& portNa
 			port.closePort();
 			return response;
 		}
-	}
+	} 
+
 	return response;
 }
 
@@ -1020,9 +1024,7 @@ DiagnosticResponse ArduinoInterface::readCurrentTrack(void* trackData, const int
 		m_isStreaming = true;
 		m_abortStreaming = false;
 		m_abortSignalled = false;
-		bool isFirstByte = true;
-		bool isDataByte = false;
-
+		
 		// We know what this is, but the A
 		applyCommTimeouts(true);
 
@@ -1156,6 +1158,7 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 
 	const bool highPrecisionMode = (!m_isHDMode) && (m_version.deviceFlags1 & FLAGS_HIGH_PRECISION_SUPPORT);
 	m_lastError = runCommand(highPrecisionMode ? COMMAND_READTRACKSTREAM_HIGHPRECISION : COMMAND_READTRACKSTREAM);
+	if (m_lastError != DiagnosticResponse::drOK) return m_lastError;
 
 	// Let the class know we're doing some streaming stuff
 	m_isStreaming = true;
@@ -1166,7 +1169,7 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 	int readFail = 0;
 
 	// Buffer to read into
-	unsigned char tempReadBuffer[64] = { 0 };
+	unsigned char tempReadBuffer[1024] = { 0 };
 
 	// Reset ready for extraction
 	extractor.reset(m_isHDMode);
@@ -1176,12 +1179,10 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 
 	// Sliding window for abort
 	char slidingWindow[5] = { 0,0,0,0,0 };
-	int noDataCounter = 0;
 	bool timeout = false;
 	bool dataState = false;
 	bool isFirstByte = true;
 	unsigned char mfmSequences = 0;
-
 	applyCommTimeouts(true);
 
 	for (;;) {
@@ -1203,7 +1204,7 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 				if ((slidingWindow[0] == 'X') && (slidingWindow[1] == 'Y') && (slidingWindow[2] == 'Z') && (slidingWindow[3] == SPECIAL_ABORT_CHAR) && (slidingWindow[4] == '1')) {
 					m_isStreaming = false;
 					m_comPort.purgeBuffers();
-					m_lastError = timeout ? DiagnosticResponse::drNoDiskInDrive : DiagnosticResponse::drOK;
+					m_lastError = timeout ? DiagnosticResponse::drError : DiagnosticResponse::drOK;
 					applyCommTimeouts(false);
 					return m_lastError;
 				}
@@ -1238,25 +1239,21 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 								tmp = (mfmSequences >> 6) & 0x03;
 								sequence.mfm = (tmp == 0) ? RotationExtractor::MFMSequence::mfm0000 : (RotationExtractor::MFMSequence)(tmp - 1);
 								sequence.timeNS = 3000 + ((unsigned int)sequence.mfm * 2000) + readSpeed;
-								if (sequence.mfm == RotationExtractor::MFMSequence::mfm0000) noDataCounter++; else noDataCounter = 0;
 								extractor.submitSequence(sequence, (byteRead & 0x80) != 0);
 
 								tmp = (mfmSequences >> 4) & 0x03;
 								sequence.mfm = (tmp == 0) ? RotationExtractor::MFMSequence::mfm0000 : (RotationExtractor::MFMSequence)(tmp - 1);
 								sequence.timeNS = 3000 + ((unsigned int)sequence.mfm * 2000) + readSpeed;
-								if (sequence.mfm == RotationExtractor::MFMSequence::mfm0000) noDataCounter++; else noDataCounter = 0;
 								extractor.submitSequence(sequence, false);
 
 								tmp = (mfmSequences >> 2) & 0x03;
 								sequence.mfm = (tmp == 0) ? RotationExtractor::MFMSequence::mfm0000 : (RotationExtractor::MFMSequence)(tmp - 1);
 								sequence.timeNS = 3000 + ((unsigned int)sequence.mfm * 2000) + readSpeed;
-								if (sequence.mfm == RotationExtractor::MFMSequence::mfm0000) noDataCounter++; else noDataCounter = 0;
 								extractor.submitSequence(sequence, false);
 
 								tmp = (mfmSequences) & 0x03;
 								sequence.mfm = (tmp == 0) ? RotationExtractor::MFMSequence::mfm0000 : (RotationExtractor::MFMSequence)(tmp - 1);
 								sequence.timeNS = 3000 + ((unsigned int)sequence.mfm * 2000) + readSpeed;
-								if (sequence.mfm == RotationExtractor::MFMSequence::mfm0000) noDataCounter++; else noDataCounter = 0;
 								extractor.submitSequence(sequence, false);
 
 								dataState = false;
@@ -1275,14 +1272,12 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 						tmp = (byteRead >> 5) & 0x03;
 						sequence.mfm = (tmp == 0) ? RotationExtractor::MFMSequence::mfm0000 : (RotationExtractor::MFMSequence)(tmp - 1);
 						sequence.timeNS = 3000 + ((unsigned int)sequence.mfm * 2000) + readSpeed;
-						if (sequence.mfm == RotationExtractor::MFMSequence::mfm0000) noDataCounter++; else noDataCounter = 0;
 
 						extractor.submitSequence(sequence, (byteRead & 0x80) != 0);
 
 						tmp = (byteRead >> 3) & 0x03;
 						sequence.mfm = (tmp == 0) ? RotationExtractor::MFMSequence::mfm0000 : (RotationExtractor::MFMSequence)(tmp - 1);
 						sequence.timeNS = 3000 + ((unsigned int)sequence.mfm * 2000) + readSpeed;
-						if (sequence.mfm == RotationExtractor::MFMSequence::mfm0000) noDataCounter++; else noDataCounter = 0;
 
 						extractor.submitSequence(sequence, false);
 					}
@@ -1304,14 +1299,13 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 						extractor.getIndexSequence(startBitPatterns);
 					}
 				}
-				else
-					if ((extractor.totalTimeReceived() > (m_isHDMode ? 600000000U : 400000000U)) && (noDataCounter > 100)) {
+				else {
+					if (extractor.totalTimeReceived() > (m_isHDMode ? 1200000000U : 600000000U))  {
 						// No data, stop
 						abortReadStreaming();
-						noDataCounter = 0;
 						timeout = true;
-						m_diskInDrive = false; // probably no disk
 					}
+				}
 			}
 		}
 		if (bytesRead < 1) {
@@ -1327,7 +1321,9 @@ DiagnosticResponse ArduinoInterface::readRotation(RotationExtractor& extractor, 
 			else {
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));			
 			}
-		} else readFail = 0;
+		} else {
+			readFail = 0;
+		}
 	}
 }
 
