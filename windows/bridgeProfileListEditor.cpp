@@ -91,12 +91,12 @@ void BridgeProfileListEditor::handleDeleteSelectedProfile() {
 	}
 }
 
-void BridgeProfileListEditor::handleURLClicked() {
+void BridgeProfileListEditor::handleURLClicked(bool isPatreon) {
 	BridgeAbout* about;
 
 	SetCursor(m_busyCursor);
 	handleAbout(false, &about);
-	ShellExecuteA(m_dialogBox, "OPEN", about->url, NULL, NULL, SW_SHOW);
+	ShellExecuteA(m_dialogBox, "OPEN", isPatreon ? "https://www.patreon.com/RobSmithDev" : about->url, NULL, NULL, SW_SHOW);
 }
 
 void BridgeProfileListEditor::handleProfileListMessages(WPARAM wParam, LPARAM lParam) {
@@ -193,7 +193,7 @@ void BridgeProfileListEditor::handleDrawListBox(PDRAWITEMSTRUCT item) {
 		DrawFocusRect(item->hDC, &rec);
 	}
 }
-
+   
 // Dialog window message handler
 INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
@@ -202,7 +202,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			return TRUE;
 
 		case WM_SETCURSOR: 
-			if ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_PROFILELIST_URL)) {
+			if (((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_PATREON))) {
 				SetCursor(m_handPoint);
 				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG)TRUE);
 				return TRUE;
@@ -210,10 +210,11 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			break;
 
 		case WM_CTLCOLORSTATIC: 
-			if ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_PROFILELIST_URL)) {
+			if (((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_PATREON))) {
 				SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
-				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE));
-				return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);  // Should be TRUE but doesnt work right unless its this!?!
+				SetBkColor((HDC)wParam, GetSysColor(COLOR_3DFACE));
+				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
+				return (INT_PTR)GetSysColorBrush(COLOR_3DFACE);  // Should be TRUE but doesnt work right unless its this!?!
 			}
 			break;
 
@@ -235,8 +236,12 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 				handleDeleteSelectedProfile();
 				return TRUE;
 
-			case IDC_PROFILELIST_URL: 
-				handleURLClicked();
+			case IDC_URL_MAIN:
+				handleURLClicked(false);
+				return TRUE;
+
+			case IDC_PATREON:
+				handleURLClicked(true);
 				return TRUE;
 
 			case IDC_LIST1: 
@@ -305,8 +310,8 @@ void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 	HWND w = GetDlgItem(hwnd, IDC_PROFILELIST_TITLE);
 	sprintf_s(display, "%s V%i.%i %s", about->about, about->majorVersion, about->minorVersion, about->isBeta ? "beta" : "");
 	SetWindowTextA(w, display);
-
-	w = GetDlgItem(hwnd, IDC_PROFILELIST_URL);
+	
+	w = GetDlgItem(hwnd, IDC_URL_MAIN);
 	sprintf_s(display, "%s", about->url);
 	SetWindowTextA(w, display);
 
@@ -316,9 +321,11 @@ void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 		LRESULT pos = SendMessage(w, LB_ADDSTRING, 0, (LPARAM)f.second->profileName);
 		SendMessage(w, LB_SETITEMDATA, (WPARAM)pos, (LPARAM)f.first);
 	}
-	
+	 
 	EnableWindow(GetDlgItem(m_dialogBox, IDEDIT), FALSE);
 	EnableWindow(GetDlgItem(m_dialogBox, IDDELETE), FALSE);
+
+	SendMessage(GetDlgItem(m_dialogBox, IDC_PATREON), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)m_patreon);
 }
 
 
@@ -336,6 +343,8 @@ BridgeProfileListEditor::BridgeProfileListEditor(HINSTANCE hInstance, HWND hwndP
 
 	m_hNormalTextColor = GetSysColor(COLOR_WINDOWTEXT);
 	m_hSelectedTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
+
+	m_patreon = (HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_PATREON), IMAGE_BITMAP, 0, 0, LR_LOADTRANSPARENT);
 }
 
 BridgeProfileListEditor::~BridgeProfileListEditor() {
@@ -344,6 +353,7 @@ BridgeProfileListEditor::~BridgeProfileListEditor() {
 	DestroyCursor(m_handPoint);
 	DeleteObject(m_hNormalBackground);
 	DeleteObject(m_hSelectedBackground);
+	DeleteObject(m_patreon);
 	if (m_boldFont) DeleteObject(m_boldFont);
 }
 

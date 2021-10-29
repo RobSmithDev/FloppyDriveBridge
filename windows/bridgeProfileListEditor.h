@@ -16,6 +16,7 @@ private:
 	HCURSOR m_busyCursor, m_handPoint;
 	HWND m_dialogBox = 0;
 	HDC m_hdcTemp;
+	HBITMAP m_patreon;
 	HBRUSH m_hNormalBackground;
 	HBRUSH m_hSelectedBackground;
 	DWORD m_hNormalBackgroundColor, m_hSelectedBackgroundColor;
@@ -39,7 +40,7 @@ private:
 	void handleDeleteSelectedProfile();
 	
 	// URL clicked
-	void handleURLClicked();
+	void handleURLClicked(bool isPatreon);
 
 	// Listbox notifications
 	void handleProfileListMessages(WPARAM wParam, LPARAM lParam);

@@ -182,7 +182,6 @@ void SerialIO::enumSerialPorts(std::vector<SerialPortInformation>& serialPorts) 
 	if ((status == FTDI::FT_STATUS::FT_OK) && (numDevs)) {
 		FTDI::FT_DEVICE_LIST_INFO_NODE* devList = (FTDI::FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FTDI::FT_DEVICE_LIST_INFO_NODE) * numDevs);
 		if (devList) {
-
 			status = ftdi.FT_GetDeviceInfoList(devList, &numDevs);
 			if (status == FTDI::FT_STATUS::FT_OK) {
 				for (unsigned int index = 0; index < numDevs; index++) {

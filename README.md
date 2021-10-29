@@ -19,7 +19,8 @@ The majority is covered by the GNU GPL3 with the exception of:
 	Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
-October 2021: Suppot for HD disks, turbo speed and a few other things - Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
+October 2021: Support for HD disks, turbo speed and a few other things - Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
+              Fixed 64-bit build with the FTDI driver
 19th June 2021: Massivly improve write system.  Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
                 Small update for Bridge to support 'no-click' option 
                 Fixed some issues with thread scheduling on Linux (Pi)

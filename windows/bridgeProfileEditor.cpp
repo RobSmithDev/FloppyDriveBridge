@@ -200,8 +200,9 @@ INT_PTR BridgeProfileEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam
 	case WM_CTLCOLORSTATIC:
 		if ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL)) {
 			SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
-			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE));
-			return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);  // Should be TRUE but doesnt work right unless its this!?!
+			SetBkColor((HDC)wParam, GetSysColor(COLOR_3DFACE));
+			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
+			return (INT_PTR)GetSysColorBrush(COLOR_3DFACE);  // Should be TRUE but doesnt work right unless its this!?!
 		}
 		break;
 

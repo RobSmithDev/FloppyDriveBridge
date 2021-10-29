@@ -95,26 +95,29 @@ IDB_BRIDGELOGO1         BITMAP                  "bridge01.bmp"
 
 IDB_BRIDGELOGO2         BITMAP                  "bridge02.bmp"
 
+IDB_PATREON             BITMAP                  "patreon.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_PROFILELISTEDITOR DIALOGEX 0, 0, 339, 228
+IDD_PROFILELISTEDITOR DIALOGEX 0, 0, 367, 228
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "FloppyBridge - Profile Manager"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Static",IDC_PROFILELIST_TITLE,7,7,253,8,SS_NOPREFIX
-    LTEXT           "Static",IDC_PROFILELIST_URL,7,17,250,8,SS_NOPREFIX | SS_NOTIFY
-    PUSHBUTTON      "Check for Updates",IDC_CHECKUPDATES,260,7,72,14
-    LISTBOX         IDC_LIST1,7,33,325,167,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Static",IDC_PROFILELIST_TITLE,7,7,249,8,SS_NOPREFIX
+    PUSHBUTTON      "Check for Updates",IDC_CHECKUPDATES,259,7,72,24
+    LISTBOX         IDC_LIST1,7,33,353,167,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Create...",IDCREATE,7,206,50,14
     PUSHBUTTON      "Edit...",IDEDIT,61,206,50,14
     PUSHBUTTON      "Delete...",IDDELETE,115,206,50,14
-    DEFPUSHBUTTON   "OK",IDOK,229,206,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,282,206,50,14
+    DEFPUSHBUTTON   "OK",IDOK,257,206,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,310,206,50,14
+    CONTROL         "",IDC_PATREON,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE,334,7,26,24,WS_EX_TRANSPARENT
+    LTEXT           "url",IDC_URL_MAIN,7,18,250,8,SS_NOTIFY,WS_EX_TRANSPARENT
 END
 
 IDD_PROFILEEDITOR DIALOGEX 0, 0, 323, 195
@@ -140,7 +143,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,100,259,10
     CONTROL         "Auto-Cache (continue to cache disk data while drive is idle)",IDC_AUTOCACHE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,114,259,10
-    LTEXT           "url",IDC_URL,57,46,259,8,SS_NOTIFY
+    LTEXT           "url",IDC_URL,57,46,259,8,SS_NOTIFY,WS_EX_TRANSPARENT
     CONTROL         "Auto Detect",IDC_AUTODETECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,262,63,54,10
 END
 
@@ -156,7 +159,7 @@ BEGIN
     IDD_PROFILELISTEDITOR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 332
+        RIGHTMARGIN, 360
         TOPMARGIN, 7
         BOTTOMMARGIN, 220
     END
@@ -188,8 +191,9 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 0, 0, 0,
     100, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0
 END
 

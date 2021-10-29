@@ -123,5 +123,8 @@
     <Image Include="bridge02.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="patreon.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
