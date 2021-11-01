@@ -170,7 +170,9 @@ _BRIDGE_SetProfileConfigFromString BRIDGE_SetProfileConfigFromString = nullptr;
 _BRIDGE_SetProfileName BRIDGE_SetProfileName = nullptr;
 _BRIDGE_CreateNewProfile BRIDGE_CreateNewProfile = nullptr;
 _BRIDGE_DeleteProfile BRIDGE_DeleteProfile = nullptr;
+#ifdef _WIN32
 _BRIDGE_ShowConfigDialog BRIDGE_ShowConfigDialog = nullptr;
+#endif
 _BRIDGE_GetDriverIndex BRIDGE_GetDriverIndex = nullptr;
 _BRIDGE_FreeDriver	BRIDGE_FreeDriver = nullptr;
 _BRIDGE_DriverGetMode	BRIDGE_DriverGetMode = nullptr;
@@ -245,8 +247,10 @@ void prepareBridge() {
 	BRIDGE_EnumComports = (_BRIDGE_EnumComports)GETFUNC(hBridgeDLLHandle, "BRIDGE_EnumComports");
 	BRIDGE_GetDriverInfo = (_BRIDGE_GetDriverInfo)GETFUNC(hBridgeDLLHandle, "BRIDGE_GetDriverInfo");
 	BRIDGE_CreateDriver = (_BRIDGE_CreateDriver)GETFUNC(hBridgeDLLHandle, "BRIDGE_CreateDriver");
-	BRIDGE_GetDriverIndex = (_BRIDGE_GetDriverIndex)GETFUNC(hBridgeDLLHandle, "BRIDGE_GetDriverIndex");	
+	BRIDGE_GetDriverIndex = (_BRIDGE_GetDriverIndex)GETFUNC(hBridgeDLLHandle, "BRIDGE_GetDriverIndex");
+#ifdef _WIN32
 	BRIDGE_ShowConfigDialog = (_BRIDGE_ShowConfigDialog)GETFUNC(hBridgeDLLHandle, "BRIDGE_ShowConfigDialog");
+#endif
 	BRIDGE_Close = (_BRIDGE_Close)GETFUNC(hBridgeDLLHandle, "BRIDGE_Close");
 	BRIDGE_Open = (_BRIDGE_Open)GETFUNC(hBridgeDLLHandle, "BRIDGE_Open");
 	BRIDGE_CreateDriverFromProfileID = (_BRIDGE_CreateDriverFromProfileID)GETFUNC(hBridgeDLLHandle, "BRIDGE_CreateDriverFromProfileID");
