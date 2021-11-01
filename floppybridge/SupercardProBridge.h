@@ -17,7 +17,7 @@
 
 #include "floppybridge_abstract.h"
 #include "CommonBridgeTemplate.h"
-#include "SupercardProInterface.h"
+#include "SuperCardProInterface.h"
 
 
 class SupercardProDiskBridge : public CommonBridgeTemplate {

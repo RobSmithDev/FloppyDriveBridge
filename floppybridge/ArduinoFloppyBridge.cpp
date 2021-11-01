@@ -57,7 +57,7 @@ ArduinoFloppyDiskBridge::ArduinoFloppyDiskBridge(BridgeMode bridgeMode, BridgeDe
 #ifdef _WIN32
 		sprintf_s(buffer, "COM%i", uaeSettings);
 #else		
-		sprintf(buffer, 20, "COM%i", uaeSettings);
+		snprintf(buffer, 20, "COM%i", uaeSettings);
 #endif
 		m_comPort = buffer;
 	}

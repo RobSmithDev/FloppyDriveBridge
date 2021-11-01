@@ -35,10 +35,10 @@
 // With this defined you get speed data per bit.  Undefined, per 8 bits.  Nothing seems to notice much
 // Inside *UAE it uses one speed value for 16 bits of MFM data so that's probably why.
 // and besides, with this *undefined* we save about 700k of ram
-// #define HIGH_RESOLUTION_MODE
+//#define HIGH_RESOLUTION_MODE
 
 // Instead of outputting "speed" values this will output bit-times in ns
-// #define OUTPUT_TIME_IN_NS
+//#define OUTPUT_TIME_IN_NS
 
 // So worse case is the disk takes 210ms to spin, and every sequence is VERY fast, and every sequence is 01, this number is highly unlikely though
 // The x2 is for HD disks

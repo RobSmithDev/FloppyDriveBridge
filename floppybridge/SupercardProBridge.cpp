@@ -14,8 +14,8 @@
 
 #include "floppybridge_abstract.h"
 #include "CommonBridgeTemplate.h"
-#include "SupercardProBridge.h"
-#include "SupercardProInterface.h"
+#include "SuperCardProBridge.h"
+#include "SuperCardProInterface.h"
 
 
 using namespace SuperCardPro;

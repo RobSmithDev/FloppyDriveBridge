@@ -19,6 +19,7 @@
 #include <codecvt>
 #include <locale>
 #include <algorithm>
+#include <cstring>
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
@@ -342,7 +343,7 @@ void _char2TChar(const char* input, TCHAR* output, unsigned maxLength) {
 #ifdef _WIN32
 	strcpy_s(output, maxLength, input);
 #else
-	strcpy_s(output, input);
+	strcpy(output, input);
 #endif
 #endif
 }
@@ -752,7 +753,7 @@ const char* FloppyBridgeAPI::getLastErrorMessage() {
 	_quickw2a(m_error, m_lastErrorAnsi);
 	return m_lastErrorAnsi.c_str();
 #else
-	return m_lastError;
+	return m_error;
 #endif
 }
 const FloppyDiskBridge::BridgeDriver* FloppyBridgeAPI::getDriverInfo() {
