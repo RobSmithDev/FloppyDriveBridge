@@ -16,7 +16,7 @@
 #include <vector>
 #include <queue>
 #include <cstring>
-#include "SupercardProInterface.h"
+#include "SuperCardProInterface.h"
 #include "RotationExtractor.h"
 #include <thread>
 
