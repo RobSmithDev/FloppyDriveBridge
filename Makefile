@@ -12,7 +12,7 @@ SOURCE  = floppybridge/ArduinoFloppyBridge.cpp \
           floppybridge/SuperCardProInterface.cpp
 DEPS	= $(SOURCE:%.cpp=%.d)
 
-CPPFLAGS +=-shared -ldl
+CPPFLAGS +=-shared -fPIC -ldl
 
 .PHONY : all clean
 
