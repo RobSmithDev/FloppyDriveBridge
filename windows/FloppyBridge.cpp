@@ -56,7 +56,9 @@ HINSTANCE hInstance;
 static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021 Robert Smith (@RobSmithDev)", "https://amiga.robsmithdev.co.uk/winuae", 0, 9, 1, 0, 0};
 static bool hasUpdateChecked = false;
 std::vector<SerialIO::SerialPortInformation> serialports;
+#ifdef _WIN32
 std::vector<HBITMAP> bridgeLogos;
+#endif
 std::unordered_map<unsigned int, BridgeConfig*> profileList;
 FloppyBridgeProfileInformationDLL* profileCache = nullptr;
 std::string profileStringExported;
@@ -145,7 +147,7 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
         // Start winsock
         WSADATA data;
         WSAStartup(MAKEWORD(2, 0), &data);
-#endif
+
         // Fetch version from 'A' record in the DNS record
         hostent* address = gethostbyname("floppybridge-amiga.robsmithdev.co.uk");
         if ((address) && (address->h_addrtype == AF_INET)) {
@@ -158,6 +160,7 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
                     ((BridgeInformation.majorVersion == BridgeInformation.updateMajorVersion) && (BridgeInformation.minorVersion < BridgeInformation.updateMinorVersion))) ? 1 : 0;
             }
         }
+#endif
     }
 
     if (output) *output = (BridgeAbout*)&BridgeInformation;
@@ -213,7 +216,11 @@ extern "C" {
                 quickw2a(port.portName, tmp);
 
                 // Copy name
+#ifdef _WIN32
                 memcpy_s(output, lengthRequired, tmp.c_str(), tmp.length());
+#else
+                memcpy(output, tmp.c_str(), tmp.length());
+#endif
                 lengthRequired -= tmp.length();
 
                 // Add seperator
@@ -403,7 +410,7 @@ extern "C" {
 #ifdef _WIN32
         strcpy_s(f->second->profileName, 128, profileName);
 #else
-        strcpy(f->second->profileName, 128, profileName);
+        strncpy(f->second->profileName, profileName, 128);
 #endif
         return true;
     }
