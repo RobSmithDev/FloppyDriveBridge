@@ -23,7 +23,7 @@
 * https://github.com/RobSmithDev/FloppyDriveBridge
 */
 
-
+#include <cstring>
 #include "FloppyBridge.h"
 #include "resource.h"
 
@@ -33,15 +33,15 @@
 #define ROMTYPE_GREASEWEAZLEREADER_WRITER
 #define ROMTYPE_SUPERCARDPRO_WRITER
 
-#include "../floppybridge/ArduinoFloppyBridge.h"
-#include "../floppybridge/GreaseWeazleBridge.h"
-#include "../floppybridge/SupercardProBridge.h"
+#include "ArduinoFloppyBridge.h"
+#include "GreaseWeazleBridge.h"
+#include "SuperCardProBridge.h"
 
 #ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
-#include "../windows/bridgeProfileListEditor.h"
-#include "../windows/bridgeProfileEditor.h"
+#include "bridgeProfileListEditor.h"
+#include "bridgeProfileEditor.h"
 
 HINSTANCE hInstance;
 

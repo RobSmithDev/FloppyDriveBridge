@@ -47,7 +47,7 @@
 
 #endif 
 
-#include "..\floppybridge\CommonBridgeTemplate.h"
+#include "CommonBridgeTemplate.h"
 
 #define MAX_NUM_DRIVERS     2
 
