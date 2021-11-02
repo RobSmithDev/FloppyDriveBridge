@@ -154,8 +154,14 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
             if (address->h_addr_list[0] != 0) {
                 in_addr add = *((in_addr*)address->h_addr_list[0]);
 
+#ifdef _WIN32
                 BridgeInformation.updateMajorVersion = add.S_un.S_un_b.s_b1;
                 BridgeInformation.updateMinorVersion = add.S_un.S_un_b.s_b2;
+#else
+                uint32_t bytes = htonl(add.s_addr);
+                BridgeInformation.updateMajorVersion = bytes >> 24;
+                BridgeInformation.updateMinorVersion = (bytes >> 16) & 0xFF;
+#endif  
                 BridgeInformation.isUpdateAvailable = ((BridgeInformation.majorVersion < BridgeInformation.updateMajorVersion) ||
                     ((BridgeInformation.majorVersion == BridgeInformation.updateMajorVersion) && (BridgeInformation.minorVersion < BridgeInformation.updateMinorVersion))) ? 1 : 0;
             }
