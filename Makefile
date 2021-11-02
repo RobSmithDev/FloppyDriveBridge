@@ -22,7 +22,7 @@ $(TARGET) : $(SOURCE)
 all : $(TARGET)
 
 install : $(TARGET)
-	cp $(TARGET) /usr/lib
+	cp $(TARGET) /usr/local/lib
 
 clean :
 	rm -f $(DEPS)
