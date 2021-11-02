@@ -9,10 +9,11 @@ SOURCE  = floppybridge/ArduinoFloppyBridge.cpp \
           floppybridge/RotationExtractor.cpp \
           floppybridge/SerialIO.cpp \
           floppybridge/SuperCardProBridge.cpp \
-          floppybridge/SuperCardProInterface.cpp
+          floppybridge/SuperCardProInterface.cpp \
+          windows/FloppyBridge.cpp
 DEPS	= $(SOURCE:%.cpp=%.d)
 
-CPPFLAGS +=-shared -fPIC -ldl
+CPPFLAGS +=-shared -fPIC -ldl -Ifloppybridge -Iwindows
 
 .PHONY : all clean
 
