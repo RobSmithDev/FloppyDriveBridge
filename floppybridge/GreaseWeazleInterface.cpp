@@ -665,7 +665,7 @@ void write28bit(int value, std::vector<unsigned char>& output) {
 GWResponse GreaseWeazleInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp) {
 	std::vector<unsigned char> outputBuffer;
 
-	// Original data was written from MSB downto LSB
+	// Original data was written from MSB down to LSB
 	int pos = 0;
 	int bit = 7;
 	unsigned char sequence = 0xAA;  // start at 10101010
@@ -691,7 +691,7 @@ GWResponse GreaseWeazleInterface::writeCurrentTrackPrecomp(const unsigned char* 
 		if (count > 5) count = 5;  // max we support 01, 001, 0001, 00001
 		
 		// Calculate the time for this in nanoseconds
-		int timeInNS = extraTimeFromPrevious + (count * (m_inHDMode ? 1000 : 2000));     // 2=4000, 3=6000, 4=8000, (5=10000 although is isnt strictly allowed)
+		int timeInNS = extraTimeFromPrevious + (count * (m_inHDMode ? 1000 : 2000));     // 2=4000, 3=6000, 4=8000, (5=10000 although is isn't strictly allowed)
 
 		if (usePrecomp) {
 			switch (sequence) {
@@ -903,7 +903,7 @@ inline void unpackStreamQueue(std::queue<unsigned char>& queue, PLLData& pllData
 
 }
 
-// Reads a complete rotation of the disk, and returns it using the callback function whcih can return FALSE to stop
+// Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
 // An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
 GWResponse GreaseWeazleInterface::readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 	std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation) {	

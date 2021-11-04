@@ -67,8 +67,8 @@ struct FloppyBridgeProfileInformationDLL {
 	// Unique ID of this profile
 	unsigned int profileID;
 
-	// Driver Index, incase it's shown on the GUI
-	unsigned int driverIndex;
+    // Driver Index, in case it's shown on the GUI
+    unsigned int driverIndex;
 
 	// Some basic information
 	CommonBridgeTemplate::BridgeMode bridgeMode;
@@ -104,7 +104,7 @@ public:
 	bool autoCache = false;
 	bool smartSpeed = false;
 
-	// Seiralising into a nice string
+	// Serialising into a nice string
 	bool fromString(char* string);
 	void toString(char** serialisedOptions);  //the pointer returned is actually lastSerialise
 };

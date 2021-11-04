@@ -309,14 +309,14 @@ void CommonBridgeTemplate::mainThread() {
 			else
 				handleBackgroundCaching();
 
-			// If the queue is empty, the motor isnt on, and we think theres a disk in the drive we periodically check as we dont have any other way to find out
+			// If the queue is empty, the motor isnt on, and we think there's a disk in the drive we periodically check as we don't have any other way to find out
 			if ((isReadyForManualDiskCheck()) && (m_queue.size() < 1)) {
 				// Monitor for disk
 				if (!supportsDiskChange()) {
 					diskInDrive = attemptToDetectDiskChange();
 				}
 				else {
-					// This may cause the drive to temporarly step
+					// This may cause the drive to temporarily step
 					diskInDrive = getDiskChangeStatus(true);
 				}
 				m_lastDiskCheckTime = std::chrono::steady_clock::now();
@@ -498,7 +498,7 @@ void CommonBridgeTemplate::saveNextBuffer(const int cylinder, const DiskSurface 
 
 // Handle reading the disk data in the background while the queue is idle
 void CommonBridgeTemplate::handleBackgroundDiskRead() {
-	// Dont do anythign until the motor is ready.  The flag that checks for disk change will also report spin ready status if the drive hasnt spun up properly yet
+	// Don't do anything until the motor is ready.  The flag that checks for disk change will also report spin ready status if the drive hasn't spun up properly yet
 	if (!((m_motorIsReady) && (!m_motorSpinningUp))) {
 		if (m_shouldAutoCache) handleBackgroundCaching();
 		return;
@@ -521,7 +521,7 @@ void CommonBridgeTemplate::handleBackgroundDiskRead() {
 	}
 
 	// Switch this depending on whats going on
-	m_extractor.setAlwaysUseIndex(m_firstTrackMode || (m_bridgeMode == BridgeMode::bmCompatiable) || (m_bridgeMode == BridgeMode::bmStalling));
+	m_extractor.setAlwaysUseIndex(m_firstTrackMode || (m_bridgeMode == BridgeMode::bmCompatible) || (m_bridgeMode == BridgeMode::bmStalling));
 	{
 		// Scope it
 		MFMCache& trackData = m_mfmRead[m_actualCurrentCylinder][(int)m_actualFloppySide].next;
@@ -537,8 +537,8 @@ void CommonBridgeTemplate::handleBackgroundDiskRead() {
 
 				saveNextBuffer(m_actualCurrentCylinder, m_actualFloppySide);
 
-				// This is a littls cache prediction, but could cause issues with things needing to re-read the same track over and over.  However eventually it will continue anyway
-				if (((((m_bridgeMode != BridgeMode::bmStalling)) && (m_bridgeMode != BridgeMode::bmCompatiable) && (!m_inHDMode)) || (m_firstTrackMode))) {
+				// This is a little cache prediction, but could cause issues with things needing to re-read the same track over and over.  However eventually it will continue anyway
+				if (((((m_bridgeMode != BridgeMode::bmStalling)) && (m_bridgeMode != BridgeMode::bmCompatible) && (!m_inHDMode)) || (m_firstTrackMode))) {
 					// So, as a little speed up.  Is the other side of this track in memory?
 					if (!m_mfmRead[m_actualCurrentCylinder][1 - (int)m_actualFloppySide].current.ready) {
 						// No.  Is anything else going on?
@@ -633,7 +633,7 @@ void CommonBridgeTemplate::handleBackgroundDiskRead() {
 						m_extractor.setRevolutionTime((newSpeed + oldRevolutionTime) / 2);
 					}
 					else {
-						// Apply the first one... This shouldnt happen
+						// Apply the first one... This shouldn't happen
 						m_extractor.setRevolutionTime(oldRevolutionTime);
 					}
 				}
@@ -667,8 +667,8 @@ int CommonBridgeTemplate::maxMFMBitPosition() {
 		if (m_mfmRead[m_currentTrack][(int)m_floppySide].current.amountReadInBits)
 			return m_mfmRead[m_currentTrack][(int)m_floppySide].current.amountReadInBits;
 
-	// If there is no buffer ready, it's difficult to tell WinUAE what it want to know, as we dont either.  So we supply a absolute MINIMUM that *should* be available on a disk
-	// As this is dynamically read each time it *shouldnt* be a problem and by the time it hopefullt reaches it the buffer will have gone live
+	// If there is no buffer ready, it's difficult to tell WinUAE what it want to know, as we don't either.  So we supply a absolute MINIMUM that *should* be available on a disk
+	// As this is dynamically read each time it *shouldn't* be a problem and by the time it hopefully reaches it the buffer will have gone live
 #ifdef _WIN32
 	return max(THEORETICAL_MINIMUM_TRACK_LENGTH * 8, m_mfmRead[m_currentTrack][(int)m_floppySide].next.amountReadInBits);
 #else
@@ -725,7 +725,7 @@ int CommonBridgeTemplate::getMFMSpeed(const int mfmPositionBits) {
 		}
 
 		if (m_inHDMode) return 100; else
-			if ((m_bridgeMode == BridgeMode::bmTurboAmigaDOS) || (((m_bridgeMode == BridgeMode::bmFast) || (m_bridgeMode == BridgeMode::bmCompatiable)) && (m_mfmRead[m_currentTrack][(int)m_floppySide].current.supportsSmartSpeed))) return 100;
+			if ((m_bridgeMode == BridgeMode::bmTurboAmigaDOS) || (((m_bridgeMode == BridgeMode::bmFast) || (m_bridgeMode == BridgeMode::bmCompatible)) && (m_mfmRead[m_currentTrack][(int)m_floppySide].current.supportsSmartSpeed))) return 100;
 
 		// Get the 'bit' we're reading
 		const int mfmPositionByte = mfmPositionBits >> 3;
@@ -804,7 +804,7 @@ bool CommonBridgeTemplate::isReady() {
 void CommonBridgeTemplate::handleBackgroundCaching() {
 	if (!m_shouldAutoCache) return;
 	if (m_queue.size()) return;
-	if (m_lastWroteTo >= 0) return;  // don't do this if a write is happenning
+	if (m_lastWroteTo >= 0) return;  // don't do this if a write is happening
 	if (!m_diskInDrive) {
 		// Trun off the motor if its not needed and we started it
 		if (m_motorIsReady || m_motorSpinningUp) return;
@@ -1061,7 +1061,7 @@ void CommonBridgeTemplate::terminate() {
 	m_lastError = "";
 }
 
-// Startup.  This will display an error message if theres an issue with the interface
+// Startup.  This will display an error message if there's an issue with the interface
 bool CommonBridgeTemplate::initialise() {
 	// Stop first
 	if (m_control) shutdown();

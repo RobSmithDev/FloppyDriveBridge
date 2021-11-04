@@ -30,7 +30,7 @@
 // I have merged the common parts into this class so only the differences are in the 
 // respective ones.  This is a good template for future devices to base off of
 //////////////////////////////////////////////////////////////////////////////////////////
-// Everything in protected needs implementing, but thats a lot less logic than on your own
+// Everything in protected needs implementing, but that's a lot less logic than on your own
 // All the thread sync and WinUAE i/o is done for you in this class
 
 #include <thread>
@@ -62,7 +62,7 @@ public:
 	// Type of bridge mode
 	enum class BridgeMode : unsigned char {
 		bmFast = 0,
-		bmCompatiable = 1,
+		bmCompatible = 1,
 		bmTurboAmigaDOS = 2,
 		bmStalling = 3,
 		bmMax = 3
@@ -126,7 +126,7 @@ private:
 		bool writeFromIndex;
 	};
 
-	// Protect the above vector in the multithreadded environment
+	// Protect the above vector in the multi-threaded environment
 	std::mutex m_pendingWriteLock;
 	std::mutex m_writeLockCompleteFlag;
 
@@ -231,7 +231,7 @@ private:
 	// When we're about to say its completed
 	bool m_writeCompletePending;
 
-	// For reporting to WinUAE if theres a disk in the drive
+	// For reporting to WinUAE if there's a disk in the drive
 	bool m_diskInDrive;
 
 	// This is set to TRUE to inform the system we're going to read the first cylinder (both sides) before we officially tell UAE the drive is ready.
@@ -395,7 +395,7 @@ protected:
 	//		rotationExtractor: supplied if you use it
 	//		maxBufferSize: Maximum number of RotationExtractor::MFMSample in the buffer.  If we're trying to detect a disk, this might be set VERY LOW
 	// 	    buffer:		   Where to save to.  When a buffer is saved, position 0 MUST be where the INDEX pulse is.  RevolutionExtractor will do this for you
-	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistant where the INDEX position is read back at
+	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistent where the INDEX position is read back at
 	//		onRotation: A function you should call for each complete revolution received.  If the function returns FALSE then you should abort reading, else keep sending revolutions
 	// Returns: ReadResponse, explains its self
 	virtual ReadResponse readData(RotationExtractor& rotationExtractor, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
@@ -405,8 +405,8 @@ protected:
 	// Parameters are:	rawMFMData						The raw data to be written.  This is an actual MFM stream, going from MSB to LSB for each byte
 	//					numBytes						Number of bits in the buffer to write
 	//					writeFromIndex					If an attempt should be made to write this from the INDEX pulse rather than just a random position
-	//					suggestUsingPrecompensation		A suggestion that you might want to use write precompensation, optional
-	// Returns TRUE if success, or false if it fails.  Largely doesnt matter as most stuff should verify with a read straight after
+	//					suggestUsingPrecompensation		A suggestion that you might want to use write pre-compensation, optional
+	// Returns TRUE if success, or false if it fails.  Largely doesn't matter as most stuff should verify with a read straight after
 	virtual bool writeData(const unsigned char* rawMFMData, const unsigned int numBits, const bool writeFromIndex, const bool suggestUsingPrecompensation)  = 0;
 
 	// A manual way to check for disk change.  This is simulated by issuing a read message and seeing if theres any data.  Returns TRUE if data or an INDEX pulse was detected
@@ -431,7 +431,7 @@ public:
 	// Call to start the system up
 	virtual bool initialise() override final;
 
-	// This is called prior to closing down, but shoudl reverse initialise
+	// This is called prior to closing down, but should reverse initialise
 	virtual void shutdown() override final;
 
 	// Returns the name of interface.  This pointer should remain valid after the class is destroyed

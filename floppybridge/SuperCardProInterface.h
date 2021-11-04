@@ -156,7 +156,7 @@ namespace SuperCardPro {
 		// Attempts to open the reader running on the COM port number provided.  
 		SCPErr openPort(std::string& comPort, bool useDriveA);
 
-		// Reads a complete rotation of the disk, and returns it using the callback function whcih can return FALSE to stop
+		// Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
 		// An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
 		SCPErr readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 			std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation);
@@ -173,7 +173,7 @@ namespace SuperCardPro {
 		// Select the track, this makes the motor seek to this position. Can return drRewindFailure, drSelectTrackError, drOK, drTrackRangeError
 		bool selectTrack(const unsigned char trackIndex, bool ignoreDiskInsertCheck = false);
 
-		// Special command that asks to do a 'seek to track -1' which isnt allowed but can be used for disk detection
+		// Special command that asks to do a 'seek to track -1' which isn't allowed but can be used for disk detection
 		bool performNoClickSeek();
 
 		// Choose which surface of the disk to read from.  Can return drError or drOK
@@ -185,7 +185,7 @@ namespace SuperCardPro {
 		// Attempt to abort reading
 		void abortReadStreaming();
 
-		// Check if  adisk is present in the drive
+		// Check if a disk is present in the drive
 		SCPErr checkForDisk(bool force);
 
 		// Closes the port down

@@ -229,7 +229,7 @@ extern "C" {
 #endif
                 lengthRequired -= tmp.length();
 
-                // Add seperator
+                // Add separator
                 output += tmp.length();
                 *output = '\0'; output++;
                 lengthRequired--;
@@ -267,7 +267,7 @@ extern "C" {
      
 
 #ifdef _WIN32
-    // Displys the config dialog (modal) for Floppy Bridge profiles.  
+    // Displays the config dialog (modal) for Floppy Bridge profiles.  
     // *If* you pass a profile ID, the dialog will jump to editing that profile, or return FALSE if it was not found.
     // Returns FALSE if cancel was pressed
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ShowConfigDialog(HWND hwndParent, unsigned int* profileID) {
@@ -310,7 +310,7 @@ extern "C" {
     }
 #endif
 
-    // Retreive a list of all of the profiles currently loaded that can be used.
+    // Retrieve a list of all of the profiles currently loaded that can be used.
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetAllProfiles(FloppyBridgeProfileInformationDLL** profiles, unsigned int* numProfiles) {
         if (profileCache) free(profileCache);
         if (!numProfiles) return false;
@@ -632,7 +632,7 @@ extern "C" {
         bridgeDriverHandle->config.smartSpeed = enabled;
         return true;
     }
-    // Gets if the driver should continue to cache other cylinders while the drive isnt being used
+    // Gets if the driver should continue to cache other cylinders while the drive isn't being used
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetAutoCache(BridgeOpened* bridgeDriverHandle, bool* isAutoCache) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_AUTOCACHE)) return false;
@@ -640,7 +640,7 @@ extern "C" {
         (*isAutoCache) = bridgeDriverHandle->config.autoCache;
         return true;
     }
-    // Sets if the driver should continue to cache other cylinders while the drive isnt being used
+    // Sets if the driver should continue to cache other cylinders while the drive isn't being used
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetAutoCache(BridgeOpened* bridgeDriverHandle, bool isAutoCache) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_AUTOCACHE)) return false;
@@ -689,7 +689,7 @@ extern "C" {
         bridgeDriverHandle->config.autoDetectComPort = autoDetectComPort;
         return true;
     }
-    // Get the cable on the drive where the flopy drive is (A or B)
+    // Get the cable on the drive where the floppy drive is (A or B)
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetCable(BridgeOpened* bridgeDriverHandle, bool* isOnB) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_DRIVE_AB)) return false;
@@ -697,7 +697,7 @@ extern "C" {
         (*isOnB) = bridgeDriverHandle->config.driveCableIsB;
         return true;
     }
-    // Set the cable on the drive where the flopy drive is (A or B)
+    // Set the cable on the drive where the floppy drive is (A or B)
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetCable(BridgeOpened* bridgeDriverHandle, bool isOnB) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_DRIVE_AB)) return false;

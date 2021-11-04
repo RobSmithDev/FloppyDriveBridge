@@ -25,7 +25,7 @@
 //
 // Purpose:
 // The class attempts to guess where an exact disk revolution occurs, and then re-aligns
-// it such that it starts at the index pulse.  This means we dont need to wait for an index
+// it such that it starts at the index pulse.  This means we don't need to wait for an index
 // pulse to work out a revolution of the disk.  The first time a disk is used we calculate
 // the time of a single revolution and then use that as a guide to how long a revolution will
 // take in the future.
@@ -90,7 +90,7 @@ public:
 		unsigned char mfmData;
 	};
 
-	// Struct for tracking what the index start looks like so we get it perfect (or at least consistant)
+	// Struct for tracking what the index start looks like so we get it perfect (or at least consistent)
 	struct IndexSequenceMarker {
 		// Sequences found
 		MFMSequence sequences[OVERLAP_SEQUENCE_MATCHES];
@@ -146,7 +146,7 @@ public:
 	RotationExtractor();
 	virtual ~RotationExtractor();
 
-	// Get and set the sequence identified as data round the INDEX pulse so that next time we get consistant revolution starting points
+	// Get and set the sequence identified as data round the INDEX pulse so that next time we get consistent revolution starting points
 	void setIndexSequence(const IndexSequenceMarker& sequence) { m_indexSequence = sequence; }
 	void getIndexSequence(IndexSequenceMarker& sequence) const { sequence = m_indexSequence; }
 

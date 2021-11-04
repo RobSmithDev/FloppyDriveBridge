@@ -82,7 +82,7 @@ unsigned int RotationExtractor::getOverlapPosition() const {
 		if (bestScore == OVERLAP_SEQUENCE_MATCHES) return bestScoreIndex;
 	}
 
-	// If we got here then there wasnt a perfect match.  This would only happen if:
+	// If we got here then there wasn't a perfect match.  This would only happen if:
 	// 1. The drive speed is broken!
 	// 2. The overlap is unformatted, in which case it doesn't really matter anyway
 	// 3. The disk/head is damaged or dirty, so then there's no hope anyway
@@ -141,7 +141,7 @@ const unsigned int RotationExtractor::getTrueIndexPosition(const unsigned int ne
 		if (bestScore == OVERLAP_SEQUENCE_MATCHES) return bestScoreIndex;
 	}
 
-	// If we got here then there wasnt a perfect match.  This would only happen if:
+	// If we got here then there wasn't a perfect match.  This would only happen if:
 	// 1. The drive speed is broken!
 	// 2. The overlap is unformatted, in which case it doesn't really matter anyway
 	// 3. The disk/head is damaged or dirty, so then there's no hope anyway

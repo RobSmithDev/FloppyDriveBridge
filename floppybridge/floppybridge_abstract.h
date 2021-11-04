@@ -109,7 +109,7 @@ public:
 
 
 	/////////////////////// Drive Motor Controls /////////////////////////////////////////////
-	// Return true if the motor is spinning, but not necessarly up to speed
+	// Return true if the motor is spinning, but not necessarily up to speed
 	virtual bool isMotorRunning()  = 0;
 
 	// Turn on and off the motor
@@ -125,7 +125,7 @@ public:
 	// Return TRUE if there is a disk in the drive.  This is usually called after gotoCylinder
 	virtual bool isDiskInDrive()  = 0;
 
-	// Check if the disk has changed.  Basically returns FALSE if theres no disk in the drive
+	// Check if the disk has changed.  Basically returns FALSE if there's no disk in the drive
 	virtual bool hasDiskChanged()  = 0;
 
 
@@ -151,7 +151,7 @@ public:
 	// Quick confirmation from UAE that we're actually on the same side
 	virtual void setSurface(bool side)  = 0;
 
-	// Return the maximum size of bits available in this revolution.  This is the maximimum passed to getMFMBit
+	// Return the maximum size of bits available in this revolution.  This is the maximum passed to getMFMBit
 	virtual int maxMFMBitPosition()  = 0;
 
 	/////////////////////// Writing Data /////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ public:
 	// You should reset this buffer if side or track changes, mfmPosition is provided purely for any index sync you may wish to do
 	virtual void writeShortToBuffer(bool side, unsigned int track, unsigned short mfmData, int mfmPosition)  = 0;
 
-	// Return TRUE if the currently insrted disk is write protected
+	// Return TRUE if the currently inserted disk is write protected
 	virtual bool isWriteProtected()  = 0;
 
 	// Requests that any data received via writeShortToBuffer be saved to disk. The side and track should match against what you have been collected
