@@ -69,7 +69,7 @@ bool BridgeConfig::fromString(char* serialisedOptions) {
     if (strlen(serialisedOptions) < 7) return false;
     std::string tmp = serialisedOptions;
 
-    size_t pos = tmp.find("[");
+    size_t pos = tmp.find('[');
     if (pos == std::string::npos) return false;
     if (pos) {
 #ifdef _WIN32
@@ -88,11 +88,11 @@ bool BridgeConfig::fromString(char* serialisedOptions) {
 
     // Split out
     std::vector<std::string> params;
-    pos = tmp.find("|");
+    pos = tmp.find('|');
     while (pos != std::string::npos) {
         params.push_back(tmp.substr(0, pos));
         tmp = tmp.substr(pos + 1);
-        pos = tmp.find("|");
+        pos = tmp.find('|');
     }
     params.push_back(tmp);
 
@@ -147,7 +147,7 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
         // Start winsock
         WSADATA data;
         WSAStartup(MAKEWORD(2, 0), &data);
-
+#endif
         // Fetch version from 'A' record in the DNS record
         hostent* address = gethostbyname("floppybridge-amiga.robsmithdev.co.uk");
         if ((address) && (address->h_addrtype == AF_INET)) {
@@ -166,7 +166,6 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
                     ((BridgeInformation.majorVersion == BridgeInformation.updateMajorVersion) && (BridgeInformation.minorVersion < BridgeInformation.updateMinorVersion))) ? 1 : 0;
             }
         }
-#endif
     }
 
     if (output) *output = (BridgeAbout*)&BridgeInformation;
@@ -348,7 +347,7 @@ extern "C" {
         // Do until we run out of string
         while (tmp.length()) {
             // Find the BAR
-            size_t pos = tmp.find("|");
+            size_t pos = tmp.find('|');
             if (pos == std::string::npos) break;
 
             // ProfileID must be >0
@@ -358,7 +357,7 @@ extern "C" {
             tmp = tmp.substr(pos + 1);
 
             // Extract just this profile
-            pos = tmp.find("]");
+            pos = tmp.find(']');
             if (pos == std::string::npos) break;
             
             BridgeConfig* config = new BridgeConfig();
@@ -494,7 +493,7 @@ extern "C" {
         if ((tmp[0] != '[') || (tmp[tmp.length() - 1] != ']')) return false;
         tmp = tmp.substr(1, tmp.length() - 2);
 
-        size_t pos = tmp.find("|");
+        size_t pos = tmp.find('|');
         if (pos == std::string::npos) return false;
         tmp = tmp.substr(0, pos);
 
