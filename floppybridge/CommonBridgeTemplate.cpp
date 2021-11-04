@@ -542,7 +542,7 @@ void CommonBridgeTemplate::handleBackgroundDiskRead() {
 					// So, as a little speed up.  Is the other side of this track in memory?
 					if (!m_mfmRead[m_actualCurrentCylinder][1 - (int)m_actualFloppySide].current.ready) {
 						// No.  Is anything else going on?
-						if (m_queue.size() < 1) {
+						if (m_queue.empty()) {
 							// No. 
 							flipSide = true;
 							return false;
@@ -554,7 +554,7 @@ void CommonBridgeTemplate::handleBackgroundDiskRead() {
 				if (!m_mfmRead[m_actualCurrentCylinder][(int)m_actualFloppySide].next.ready) return false;
 
 				// Else read another revolution
-				return m_queue.size() < 1;
+				return m_queue.empty();
 
 			});
 		switch (r) {
@@ -1081,7 +1081,7 @@ bool CommonBridgeTemplate::initialise() {
 	// Clear down the queue
 	{
 		std::lock_guard<std::mutex> lock(m_queueProtect);
-		while (m_queue.size()) m_queue.pop();
+		while (!m_queue.empty()) m_queue.pop();
 	}
 	{
 		std::lock_guard<std::mutex> lock(m_queueSemaphoreLock);
