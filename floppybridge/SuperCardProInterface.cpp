@@ -38,9 +38,8 @@ using namespace SuperCardPro;
 
 
 // Constructor for this class
-SCPInterface::SCPInterface() {
-	m_diskInDrive = false;
-	m_isWriteProtected = true;
+SCPInterface::SCPInterface() : m_diskInDrive(false), m_isWriteProtected(true)
+{
 }
 
 // Free me
@@ -415,14 +414,14 @@ inline int readBit(const unsigned char* buffer, const unsigned int maxLength, in
 SCPErr SCPInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp) {
 	std::vector<uint16_t> outputBuffer;
 
-	// Original data was written from MSB downto LSB
+	// Original data was written from MSB down to LSB
 	int pos = 0;
 	int bit = 7;
 	unsigned char sequence = 0xAA;  // start at 10101010
 	const int precompTime = 140;   // Amiga default precomp amount (140ns)
 	int extraTimeFromPrevious = 0;
 
-	// Re-encode the data into our format and apply precomp.  The +1 is to ensure theres some padding around the edge 
+	// Re-encode the data into our format and apply precomp.  The +1 is to ensure there's some padding around the edge 
 	while (pos < numBytes + 1) {
 		int b, count = 0;
 
@@ -647,7 +646,7 @@ bool SCPInterface::checkDiskCapacity(bool& isHD) {
 }
 
 
-// Reads a complete rotation of the disk, and returns it using the callback function whcih can return FALSE to stop
+// Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
 // An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
 SCPErr SCPInterface::readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 	std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation) {

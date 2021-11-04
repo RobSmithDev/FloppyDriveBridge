@@ -16,7 +16,7 @@
 *
 */
 
-/* rommgr.h has the following ROM TYPES reserved:  This is so that file does not need to be changed to support upto 16 new interfaces
+/* rommgr.h has the following ROM TYPES reserved:  This is so that file does not need to be changed to support up to 16 new interfaces
 	ROMTYPE_FLOPYBRDGE0 
 	ROMTYPE_FLOPYBRDGE1 
 	ROMTYPE_FLOPYBRDGE2 
@@ -56,7 +56,7 @@
 // Build a list of what can be installed
 // Options are: setting:  The first bit-field relating to options below
 //				canstall: If true the reader is allowed to stall WinUAE to get the data in as required
-//				useindex: If true the reader shoudl use the index marker to sync revolutions rather than guessing by other means
+//				useindex: If true the reader should use the index marker to sync revolutions rather than guessing by other means
 //              useturbo: Accelerates how fast the OS reads the data, this will break some copy protections
 //              enablehd: Enable HD floppy disk support
 #define BRIDGE_FACTORY(settings, bridgemode, densitymode)																									\

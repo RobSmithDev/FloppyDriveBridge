@@ -776,7 +776,7 @@ unsigned int SerialIO::write(const void* data, unsigned int dataLength) {
 
 // Attempts to read some data from the port.  Returns how much it actually read.
 // If readAll is TRUE then it will wait until all data has been read or an error occurs
-// Returns how mcuh it actually read
+// Returns how much it actually read
 unsigned int SerialIO::read(void* data, unsigned int dataLength) {
 	if ((data == nullptr) || (dataLength == 0)) return 0;
 	if (!isPortOpen()) return 0;

@@ -62,7 +62,7 @@ namespace GreaseWeazle {
 		NoClickStep = 22
 	};
 
-	// Command responses/acknowledgements
+	// Command responses/acknowledgments
 	enum class Ack {
 		Okay = 0,
 		BadCommand = 1,
@@ -194,7 +194,7 @@ namespace GreaseWeazle {
 		// Attempts to open the reader running on the COM port provided (or blank for auto-detect)
 		GWResponse openPort(const std::string& comPort, bool useDriveA);
 
-		// Reads a complete rotation of the disk, and returns it using the callback function whcih can return FALSE to stop
+		// Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
 		// An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
 		GWResponse readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 			std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation);
@@ -220,7 +220,7 @@ namespace GreaseWeazle {
 		// Attempt to abort reading
 		void abortReadStreaming();
 
-		// Check if  adisk is present in the drive
+		// Check if a disk is present in the drive
 		GWResponse checkForDisk(bool force);
 
 		// Closes the port down

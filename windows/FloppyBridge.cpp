@@ -69,7 +69,7 @@ bool BridgeConfig::fromString(char* serialisedOptions) {
     if (strlen(serialisedOptions) < 7) return false;
     std::string tmp = serialisedOptions;
 
-    size_t pos = tmp.find("[");
+    size_t pos = tmp.find('[');
     if (pos == std::string::npos) return false;
     if (pos) {
 #ifdef _WIN32
@@ -88,11 +88,11 @@ bool BridgeConfig::fromString(char* serialisedOptions) {
 
     // Split out
     std::vector<std::string> params;
-    pos = tmp.find("|");
+    pos = tmp.find('|');
     while (pos != std::string::npos) {
         params.push_back(tmp.substr(0, pos));
         tmp = tmp.substr(pos + 1);
-        pos = tmp.find("|");
+        pos = tmp.find('|');
     }
     params.push_back(tmp);
 
@@ -147,7 +147,7 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
         // Start winsock
         WSADATA data;
         WSAStartup(MAKEWORD(2, 0), &data);
-
+#endif
         // Fetch version from 'A' record in the DNS record
         hostent* address = gethostbyname("floppybridge-amiga.robsmithdev.co.uk");
         if ((address) && (address->h_addrtype == AF_INET)) {
@@ -166,7 +166,6 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
                     ((BridgeInformation.majorVersion == BridgeInformation.updateMajorVersion) && (BridgeInformation.minorVersion < BridgeInformation.updateMinorVersion))) ? 1 : 0;
             }
         }
-#endif
     }
 
     if (output) *output = (BridgeAbout*)&BridgeInformation;
@@ -229,7 +228,7 @@ extern "C" {
 #endif
                 lengthRequired -= tmp.length();
 
-                // Add seperator
+                // Add separator
                 output += tmp.length();
                 *output = '\0'; output++;
                 lengthRequired--;
@@ -267,7 +266,7 @@ extern "C" {
      
 
 #ifdef _WIN32
-    // Displys the config dialog (modal) for Floppy Bridge profiles.  
+    // Displays the config dialog (modal) for Floppy Bridge profiles.  
     // *If* you pass a profile ID, the dialog will jump to editing that profile, or return FALSE if it was not found.
     // Returns FALSE if cancel was pressed
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ShowConfigDialog(HWND hwndParent, unsigned int* profileID) {
@@ -310,7 +309,7 @@ extern "C" {
     }
 #endif
 
-    // Retreive a list of all of the profiles currently loaded that can be used.
+    // Retrieve a list of all of the profiles currently loaded that can be used.
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetAllProfiles(FloppyBridgeProfileInformationDLL** profiles, unsigned int* numProfiles) {
         if (profileCache) free(profileCache);
         if (!numProfiles) return false;
@@ -348,7 +347,7 @@ extern "C" {
         // Do until we run out of string
         while (tmp.length()) {
             // Find the BAR
-            size_t pos = tmp.find("|");
+            size_t pos = tmp.find('|');
             if (pos == std::string::npos) break;
 
             // ProfileID must be >0
@@ -358,7 +357,7 @@ extern "C" {
             tmp = tmp.substr(pos + 1);
 
             // Extract just this profile
-            pos = tmp.find("]");
+            pos = tmp.find(']');
             if (pos == std::string::npos) break;
             
             BridgeConfig* config = new BridgeConfig();
@@ -494,7 +493,7 @@ extern "C" {
         if ((tmp[0] != '[') || (tmp[tmp.length() - 1] != ']')) return false;
         tmp = tmp.substr(1, tmp.length() - 2);
 
-        size_t pos = tmp.find("|");
+        size_t pos = tmp.find('|');
         if (pos == std::string::npos) return false;
         tmp = tmp.substr(0, pos);
 
@@ -632,7 +631,7 @@ extern "C" {
         bridgeDriverHandle->config.smartSpeed = enabled;
         return true;
     }
-    // Gets if the driver should continue to cache other cylinders while the drive isnt being used
+    // Gets if the driver should continue to cache other cylinders while the drive isn't being used
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetAutoCache(BridgeOpened* bridgeDriverHandle, bool* isAutoCache) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_AUTOCACHE)) return false;
@@ -640,7 +639,7 @@ extern "C" {
         (*isAutoCache) = bridgeDriverHandle->config.autoCache;
         return true;
     }
-    // Sets if the driver should continue to cache other cylinders while the drive isnt being used
+    // Sets if the driver should continue to cache other cylinders while the drive isn't being used
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetAutoCache(BridgeOpened* bridgeDriverHandle, bool isAutoCache) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_AUTOCACHE)) return false;
@@ -689,7 +688,7 @@ extern "C" {
         bridgeDriverHandle->config.autoDetectComPort = autoDetectComPort;
         return true;
     }
-    // Get the cable on the drive where the flopy drive is (A or B)
+    // Get the cable on the drive where the floppy drive is (A or B)
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetCable(BridgeOpened* bridgeDriverHandle, bool* isOnB) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_DRIVE_AB)) return false;
@@ -697,7 +696,7 @@ extern "C" {
         (*isOnB) = bridgeDriverHandle->config.driveCableIsB;
         return true;
     }
-    // Set the cable on the drive where the flopy drive is (A or B)
+    // Set the cable on the drive where the floppy drive is (A or B)
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetCable(BridgeOpened* bridgeDriverHandle, bool isOnB) {
         if (!bridgeDriverHandle) return false;
         if (!(bridgeDriverHandle->driverDetails->configOptions & CONFIG_OPTIONS_DRIVE_AB)) return false;

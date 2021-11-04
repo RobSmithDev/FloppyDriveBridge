@@ -67,7 +67,7 @@ struct FloppyBridgeProfileInformationDLL {
 	// Unique ID of this profile
 	unsigned int profileID;
 
-	// Driver Index, incase it's shown on the GUI
+	// Driver Index, in case it's shown on the GUI
 	unsigned int driverIndex;
 
 	// Some basic information
@@ -104,7 +104,7 @@ public:
 	bool autoCache = false;
 	bool smartSpeed = false;
 
-	// Seiralising into a nice string
+	// Serialising into a nice string
 	bool fromString(char* string);
 	void toString(char** serialisedOptions);  //the pointer returned is actually lastSerialise
 };
@@ -130,71 +130,71 @@ struct BridgeOpened {
 
 
 extern "C" {
-    FLOPPYBRIDGE_API void CALLING_CONVENSION BRIDGE_About(bool checkForUpdates, BridgeAbout** output);
-    FLOPPYBRIDGE_API unsigned int CALLING_CONVENSION BRIDGE_NumDrivers(void);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_EnumComports(char* output, unsigned int* outputLength);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetConfigString(BridgeOpened* bridgeDriverHandle, char** serialisedOptions);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_SetConfigFromString(BridgeOpened* bridgeDriverHandle, char* serialisedOptions);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION BRIDGE_About(bool checkForUpdates, BridgeAbout** output);
+	FLOPPYBRIDGE_API unsigned int CALLING_CONVENSION BRIDGE_NumDrivers(void);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_EnumComports(char* output, unsigned int* outputLength);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetConfigString(BridgeOpened* bridgeDriverHandle, char** serialisedOptions);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_SetConfigFromString(BridgeOpened* bridgeDriverHandle, char* serialisedOptions);
 #ifdef _WIN32
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ShowConfigDialog(HWND hwndParent, unsigned int* profileID);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ShowConfigDialog(HWND hwndParent, unsigned int* profileID);
 #endif
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetAllProfiles(FloppyBridgeProfileInformationDLL** profiles, unsigned int* numProfiles);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ImportProfilesFromString(char* profilesConfigString);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ExportProfilesToString(char** profilesConfigString);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetProfileConfigFromString(unsigned int profileID, char** profilesConfigString);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_SetProfileConfigFromString(unsigned int profileID, char* profilesConfigString);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_SetProfileName(unsigned int profileID, char* profileName);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateNewProfile(unsigned int driverIndex, unsigned int* profileID);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DeleteProfile(unsigned int profileID);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetDriverInfo(unsigned int driverIndex, FloppyDiskBridge::BridgeDriver** driverInformation);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_Close(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriver(unsigned int driverIndex, BridgeOpened** bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriverFromConfigString(char* configString, BridgeOpened** bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriverFromProfileID(unsigned int profileID, BridgeOpened** bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_Open(BridgeOpened* bridgeDriverHandle, char** errorMessage);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetDriverIndex(BridgeOpened* bridgeDriverHandle, unsigned int* driverIndex);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_FreeDriver(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeMode* bridgeMode);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeMode bridgeMode);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetDensityMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode* densityMode);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetDensityMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode densityMode);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetSmartSpeedEnabled(BridgeOpened* bridgeDriverHandle, bool* enabled);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetSmartSpeedEnabled(BridgeOpened* bridgeDriverHandle, bool enabled);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetAutoCache(BridgeOpened* bridgeDriverHandle, bool* isAutoCache);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetAutoCache(BridgeOpened* bridgeDriverHandle, bool isAutoCache);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetCurrentComPort(BridgeOpened* bridgeDriverHandle, char** comPort);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetCurrentComPort(BridgeOpened* bridgeDriverHandle, char* comPort);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetAutoDetectComPort(BridgeOpened* bridgeDriverHandle, bool* autoDetectComPort);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetAutoDetectComPort(BridgeOpened* bridgeDriverHandle, bool autoDetectComPort);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetCable(BridgeOpened* bridgeDriverHandle, bool* isOnB);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetCable(BridgeOpened* bridgeDriverHandle, bool isOnB);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetAllProfiles(FloppyBridgeProfileInformationDLL** profiles, unsigned int* numProfiles);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ImportProfilesFromString(char* profilesConfigString);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_ExportProfilesToString(char** profilesConfigString);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetProfileConfigFromString(unsigned int profileID, char** profilesConfigString);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_SetProfileConfigFromString(unsigned int profileID, char* profilesConfigString);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_SetProfileName(unsigned int profileID, char* profileName);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateNewProfile(unsigned int driverIndex, unsigned int* profileID);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DeleteProfile(unsigned int profileID);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetDriverInfo(unsigned int driverIndex, FloppyDiskBridge::BridgeDriver** driverInformation);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_Close(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriver(unsigned int driverIndex, BridgeOpened** bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriverFromConfigString(char* configString, BridgeOpened** bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriverFromProfileID(unsigned int profileID, BridgeOpened** bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_Open(BridgeOpened* bridgeDriverHandle, char** errorMessage);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetDriverIndex(BridgeOpened* bridgeDriverHandle, unsigned int* driverIndex);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_FreeDriver(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeMode* bridgeMode);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeMode bridgeMode);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetDensityMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode* densityMode);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetDensityMode(BridgeOpened* bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode densityMode);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetSmartSpeedEnabled(BridgeOpened* bridgeDriverHandle, bool* enabled);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetSmartSpeedEnabled(BridgeOpened* bridgeDriverHandle, bool enabled);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetAutoCache(BridgeOpened* bridgeDriverHandle, bool* isAutoCache);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetAutoCache(BridgeOpened* bridgeDriverHandle, bool isAutoCache);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetCurrentComPort(BridgeOpened* bridgeDriverHandle, char** comPort);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetCurrentComPort(BridgeOpened* bridgeDriverHandle, char* comPort);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetAutoDetectComPort(BridgeOpened* bridgeDriverHandle, bool* autoDetectComPort);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetAutoDetectComPort(BridgeOpened* bridgeDriverHandle, bool autoDetectComPort);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverGetCable(BridgeOpened* bridgeDriverHandle, bool* isOnB);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_DriverSetCable(BridgeOpened* bridgeDriverHandle, bool isOnB);
 
-    FLOPPYBRIDGE_API unsigned char CALLING_CONVENSION DRIVER_getBitSpeed(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API FloppyDiskBridge::DriveTypeID CALLING_CONVENSION DRIVER_getDriveTypeID(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_resetDrive(BridgeOpened* bridgeDriverHandle, int trackNumber);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isAtCylinder0(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API unsigned char CALLING_CONVENSION DRIVER_getMaxCylinder(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_gotoCylinder(BridgeOpened* bridgeDriverHandle, int cylinderNumber, bool side);
-    FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_handleNoClickStep(BridgeOpened* bridgeDriverHandle, bool side);
-    FLOPPYBRIDGE_API unsigned char CALLING_CONVENSION DRIVER_getCurrentCylinderNumber(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_getCurrentSide(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_setMotorStatus(BridgeOpened* bridgeDriverHandle, bool side, bool turnOn);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isMotorRunning(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isReady(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isDiskInDrive(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_hasDiskChanged(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isMFMPositionAtIndex(BridgeOpened* bridgeDriverHandle, int mfmPositionBits);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isMFMDataAvailable(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_getMFMBit(BridgeOpened* bridgeDriverHandle, int mfmPositionBits);
-    FLOPPYBRIDGE_API int CALLING_CONVENSION DRIVER_getMFMSpeed(BridgeOpened* bridgeDriverHandle, int mfmPositionBits);
-    FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_mfmSwitchBuffer(BridgeOpened* bridgeDriverHandle, bool side);
-    FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_setSurface(BridgeOpened* bridgeDriverHandle, bool side);
-    FLOPPYBRIDGE_API int CALLING_CONVENSION DRIVER_maxMFMBitPosition(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_writeShortToBuffer(BridgeOpened* bridgeDriverHandle, bool side, unsigned int track, unsigned short mfmData, int mfmPosition);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isWriteProtected(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API unsigned int CALLING_CONVENSION DRIVER_commitWriteBuffer(BridgeOpened* bridgeDriverHandle, bool side, unsigned int track);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isWritePending(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isWriteComplete(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_canTurboWrite(BridgeOpened* bridgeDriverHandle);
-    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isReadyToWrite(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API unsigned char CALLING_CONVENSION DRIVER_getBitSpeed(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API FloppyDiskBridge::DriveTypeID CALLING_CONVENSION DRIVER_getDriveTypeID(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_resetDrive(BridgeOpened* bridgeDriverHandle, int trackNumber);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isAtCylinder0(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API unsigned char CALLING_CONVENSION DRIVER_getMaxCylinder(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_gotoCylinder(BridgeOpened* bridgeDriverHandle, int cylinderNumber, bool side);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_handleNoClickStep(BridgeOpened* bridgeDriverHandle, bool side);
+	FLOPPYBRIDGE_API unsigned char CALLING_CONVENSION DRIVER_getCurrentCylinderNumber(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_getCurrentSide(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_setMotorStatus(BridgeOpened* bridgeDriverHandle, bool side, bool turnOn);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isMotorRunning(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isReady(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isDiskInDrive(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_hasDiskChanged(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isMFMPositionAtIndex(BridgeOpened* bridgeDriverHandle, int mfmPositionBits);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isMFMDataAvailable(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_getMFMBit(BridgeOpened* bridgeDriverHandle, int mfmPositionBits);
+	FLOPPYBRIDGE_API int CALLING_CONVENSION DRIVER_getMFMSpeed(BridgeOpened* bridgeDriverHandle, int mfmPositionBits);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_mfmSwitchBuffer(BridgeOpened* bridgeDriverHandle, bool side);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_setSurface(BridgeOpened* bridgeDriverHandle, bool side);
+	FLOPPYBRIDGE_API int CALLING_CONVENSION DRIVER_maxMFMBitPosition(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_writeShortToBuffer(BridgeOpened* bridgeDriverHandle, bool side, unsigned int track, unsigned short mfmData, int mfmPosition);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isWriteProtected(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API unsigned int CALLING_CONVENSION DRIVER_commitWriteBuffer(BridgeOpened* bridgeDriverHandle, bool side, unsigned int track);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isWritePending(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isWriteComplete(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_canTurboWrite(BridgeOpened* bridgeDriverHandle);
+	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isReadyToWrite(BridgeOpened* bridgeDriverHandle);
 }

@@ -30,7 +30,7 @@
 // I have merged the common parts into this class so only the differences are in the 
 // respective ones.  This is a good template for future devices to base off of
 //////////////////////////////////////////////////////////////////////////////////////////
-// Everything in protected needs implementing, but thats a lot less logic than on your own
+// Everything in protected needs implementing, but that's a lot less logic than on your own
 // All the thread sync and WinUAE i/o is done for you in this class
 
 #include <thread>
@@ -62,7 +62,7 @@ public:
 	// Type of bridge mode
 	enum class BridgeMode : unsigned char {
 		bmFast = 0,
-		bmCompatiable = 1,
+		bmCompatible = 1,
 		bmTurboAmigaDOS = 2,
 		bmStalling = 3,
 		bmMax = 3
@@ -126,7 +126,7 @@ private:
 		bool writeFromIndex;
 	};
 
-	// Protect the above vector in the multithreadded environment
+	// Protect the above vector in the multi-threaded environment
 	std::mutex m_pendingWriteLock;
 	std::mutex m_writeLockCompleteFlag;
 
@@ -231,7 +231,7 @@ private:
 	// When we're about to say its completed
 	bool m_writeCompletePending;
 
-	// For reporting to WinUAE if theres a disk in the drive
+	// For reporting to WinUAE if there's a disk in the drive
 	bool m_diskInDrive;
 
 	// This is set to TRUE to inform the system we're going to read the first cylinder (both sides) before we officially tell UAE the drive is ready.
@@ -340,19 +340,19 @@ protected:
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Return the number of milliseconds required for the disk to spin up.  You *may* need to override this
-	virtual const unsigned int getDriveSpinupTime() { return 500; };
+	virtual const unsigned int getDriveSpinupTime() { return 500; }
 
 	// Called when a disk is inserted so that you can (re)populate the response to _getDriveTypeID()
-	virtual void checkDiskType() {};
+	virtual void checkDiskType() {}
 
 	// Called to force into DD or HD mode.  Overrides checkDiskType() until checkDiskType() is called again
-	virtual void forceDiskDensity(bool forceHD) {};
+	virtual void forceDiskDensity(bool forceHD) {}
 
 	// If your device supports being able to abort a disk read, mid-read then implement this
-	virtual void abortDiskReading() {};
+	virtual void abortDiskReading() {}
 
 	// This is called by the main thread incase you need to do anything specific at regulat intervals
-	virtual void poll() {};
+	virtual void poll() {}
 
 	// If your device supports the DiskChange option then return TRUE here.  If not, then the code will simulate it
 	virtual bool supportsDiskChange()  = 0;
@@ -395,7 +395,7 @@ protected:
 	//		rotationExtractor: supplied if you use it
 	//		maxBufferSize: Maximum number of RotationExtractor::MFMSample in the buffer.  If we're trying to detect a disk, this might be set VERY LOW
 	// 	    buffer:		   Where to save to.  When a buffer is saved, position 0 MUST be where the INDEX pulse is.  RevolutionExtractor will do this for you
-	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistant where the INDEX position is read back at
+	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistent where the INDEX position is read back at
 	//		onRotation: A function you should call for each complete revolution received.  If the function returns FALSE then you should abort reading, else keep sending revolutions
 	// Returns: ReadResponse, explains its self
 	virtual ReadResponse readData(RotationExtractor& rotationExtractor, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
@@ -405,8 +405,8 @@ protected:
 	// Parameters are:	rawMFMData						The raw data to be written.  This is an actual MFM stream, going from MSB to LSB for each byte
 	//					numBytes						Number of bits in the buffer to write
 	//					writeFromIndex					If an attempt should be made to write this from the INDEX pulse rather than just a random position
-	//					suggestUsingPrecompensation		A suggestion that you might want to use write precompensation, optional
-	// Returns TRUE if success, or false if it fails.  Largely doesnt matter as most stuff should verify with a read straight after
+	//					suggestUsingPrecompensation		A suggestion that you might want to use write pre-compensation, optional
+	// Returns TRUE if success, or false if it fails.  Largely doesn't matter as most stuff should verify with a read straight after
 	virtual bool writeData(const unsigned char* rawMFMData, const unsigned int numBits, const bool writeFromIndex, const bool suggestUsingPrecompensation)  = 0;
 
 	// A manual way to check for disk change.  This is simulated by issuing a read message and seeing if theres any data.  Returns TRUE if data or an INDEX pulse was detected
@@ -431,14 +431,14 @@ public:
 	// Call to start the system up
 	virtual bool initialise() override final;
 
-	// This is called prior to closing down, but shoudl reverse initialise
+	// This is called prior to closing down, but should reverse initialise
 	virtual void shutdown() override final;
 
 	// Returns the name of interface.  This pointer should remain valid after the class is destroyed
-	virtual const BridgeDriver* getDriverInfo() override final { return _getDriverInfo(); };
+	virtual const BridgeDriver* getDriverInfo() override final { return _getDriverInfo(); }
 
 	// Return the type of disk connected
-	virtual DriveTypeID getDriveTypeID() override final { return _getDriveTypeID(); };
+	virtual DriveTypeID getDriveTypeID() override final { return _getDriveTypeID(); }
 
 	// Call to get the last error message.  If the string is empty there was no error
 	virtual const char* getLastErrorMessage() override final;
@@ -447,28 +447,28 @@ public:
 	virtual bool isAtCylinder0() override final { return m_currentTrack == 0; }
 
 	// Return the number of cylinders the drive supports.
-	virtual unsigned char getMaxCylinder() override final { return MAX_CYLINDER_BRIDGE; };
+	virtual unsigned char getMaxCylinder() override final { return MAX_CYLINDER_BRIDGE; }
 
 	// Return true if the motor is spinning
-	virtual bool isMotorRunning() override final { return m_isMotorRunning; };
+	virtual bool isMotorRunning() override final { return m_isMotorRunning; }
 
 	// Returns TRUE when the last command requested has completed
 	virtual bool isReady() override;
 
-	// Return TRUE if there is a disk in the drive, else return false.  Some drives dont detect this until the head moves once
-	virtual bool isDiskInDrive() override final { return m_diskInDrive; };
+	// Return TRUE if there is a disk in the drive, else return false.  Some drives don't detect this until the head moves once
+	virtual bool isDiskInDrive() override final { return m_diskInDrive; }
 
-	// Check if the disk has changed.  Basically returns FALSE if theres no disk in the drive
-	virtual bool hasDiskChanged() override final { return !m_diskInDrive; };
+	// Check if the disk has changed.  Basically returns FALSE if there's no disk in the drive
+	virtual bool hasDiskChanged() override final { return !m_diskInDrive; }
 
 	// Returns the currently selected side
-	virtual bool getCurrentSide() override final { return m_floppySide == DiskSurface::dsUpper; };
+	virtual bool getCurrentSide() override final { return m_floppySide == DiskSurface::dsUpper; }
 
 	// Return the current track number we're on
-	virtual unsigned char getCurrentCylinderNumber() override final { return m_currentTrack; };
+	virtual unsigned char getCurrentCylinderNumber() override final { return m_currentTrack; }
 
-	// Return TRUE if the currently insrted disk is write protected
-	virtual bool isWriteProtected() override final { return m_writeProtected; };
+	// Return TRUE if the currently inserted disk is write protected
+	virtual bool isWriteProtected() override final { return m_writeProtected; }
 
 	// Get the speed at this position.  1000=100%.  
 	virtual int getMFMSpeed(const int mfmPositionBits) override final;
@@ -521,7 +521,7 @@ public:
 	virtual bool resetDrive(int trackNumber) override final;
 
 	// Set to TRUE if turbo writing is allowed (this is a sneaky DMA bypass trick)
-	virtual bool canTurboWrite() { return true; };
+	virtual bool canTurboWrite() { return true; }
 
 };
 
