@@ -38,9 +38,8 @@ using namespace SuperCardPro;
 
 
 // Constructor for this class
-SCPInterface::SCPInterface() {
-	m_diskInDrive = false;
-	m_isWriteProtected = true;
+SCPInterface::SCPInterface() : m_diskInDrive(false), m_isWriteProtected(true)
+{
 }
 
 // Free me
