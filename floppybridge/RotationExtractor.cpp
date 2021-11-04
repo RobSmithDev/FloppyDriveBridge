@@ -32,10 +32,10 @@
 
 #include "RotationExtractor.h"
 
-RotationExtractor::RotationExtractor() {
-	m_sequences = new MFMSequenceInfo[MAX_REVOLUTION_SEQUENCES];
-	m_initialSequences = new MFMSequenceInfo[OVERLAP_SEQUENCE_MATCHES * OVERLAP_EXTRA_BUFFER];
-
+RotationExtractor::RotationExtractor() : m_sequences(new MFMSequenceInfo[MAX_REVOLUTION_SEQUENCES]),
+										 m_initialSequences(
+											 new MFMSequenceInfo[OVERLAP_SEQUENCE_MATCHES * OVERLAP_EXTRA_BUFFER])
+{
 }
 RotationExtractor::~RotationExtractor() {
 	delete[] m_sequences;

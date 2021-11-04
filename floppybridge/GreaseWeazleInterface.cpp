@@ -69,16 +69,11 @@ struct PLLData {
 
 
 // Constructor for this class
-GreaseWeazleInterface::GreaseWeazleInterface() {
-	m_diskInDrive = false;
-
-	m_currentBusType = BusType::IBMPC;
-	m_currentDriveIndex = 0;
-
+GreaseWeazleInterface::GreaseWeazleInterface() : m_currentBusType(BusType::IBMPC), m_currentDriveIndex(0), m_diskInDrive(false),
+												 m_isWriteProtected(true)
+{
 	memset(&m_gwVersionInformation, 0, sizeof(m_gwVersionInformation));
 	memset(&m_gwDriveDelays, 0, sizeof(m_gwDriveDelays));
-
-	m_isWriteProtected = true;
 }
 
 // Free me
