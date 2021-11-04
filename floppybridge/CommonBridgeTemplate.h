@@ -340,19 +340,19 @@ protected:
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Return the number of milliseconds required for the disk to spin up.  You *may* need to override this
-	virtual const unsigned int getDriveSpinupTime() { return 500; };
+	virtual const unsigned int getDriveSpinupTime() { return 500; }
 
 	// Called when a disk is inserted so that you can (re)populate the response to _getDriveTypeID()
-	virtual void checkDiskType() {};
+	virtual void checkDiskType() {}
 
 	// Called to force into DD or HD mode.  Overrides checkDiskType() until checkDiskType() is called again
-	virtual void forceDiskDensity(bool forceHD) {};
+	virtual void forceDiskDensity(bool forceHD) {}
 
 	// If your device supports being able to abort a disk read, mid-read then implement this
-	virtual void abortDiskReading() {};
+	virtual void abortDiskReading() {}
 
 	// This is called by the main thread incase you need to do anything specific at regulat intervals
-	virtual void poll() {};
+	virtual void poll() {}
 
 	// If your device supports the DiskChange option then return TRUE here.  If not, then the code will simulate it
 	virtual bool supportsDiskChange()  = 0;
@@ -435,10 +435,10 @@ public:
 	virtual void shutdown() override final;
 
 	// Returns the name of interface.  This pointer should remain valid after the class is destroyed
-	virtual const BridgeDriver* getDriverInfo() override final { return _getDriverInfo(); };
+	virtual const BridgeDriver* getDriverInfo() override final { return _getDriverInfo(); }
 
 	// Return the type of disk connected
-	virtual DriveTypeID getDriveTypeID() override final { return _getDriveTypeID(); };
+	virtual DriveTypeID getDriveTypeID() override final { return _getDriveTypeID(); }
 
 	// Call to get the last error message.  If the string is empty there was no error
 	virtual const char* getLastErrorMessage() override final;
@@ -447,28 +447,28 @@ public:
 	virtual bool isAtCylinder0() override final { return m_currentTrack == 0; }
 
 	// Return the number of cylinders the drive supports.
-	virtual unsigned char getMaxCylinder() override final { return MAX_CYLINDER_BRIDGE; };
+	virtual unsigned char getMaxCylinder() override final { return MAX_CYLINDER_BRIDGE; }
 
 	// Return true if the motor is spinning
-	virtual bool isMotorRunning() override final { return m_isMotorRunning; };
+	virtual bool isMotorRunning() override final { return m_isMotorRunning; }
 
 	// Returns TRUE when the last command requested has completed
 	virtual bool isReady() override;
 
-	// Return TRUE if there is a disk in the drive, else return false.  Some drives dont detect this until the head moves once
-	virtual bool isDiskInDrive() override final { return m_diskInDrive; };
+	// Return TRUE if there is a disk in the drive, else return false.  Some drives don't detect this until the head moves once
+	virtual bool isDiskInDrive() override final { return m_diskInDrive; }
 
-	// Check if the disk has changed.  Basically returns FALSE if theres no disk in the drive
-	virtual bool hasDiskChanged() override final { return !m_diskInDrive; };
+	// Check if the disk has changed.  Basically returns FALSE if there's no disk in the drive
+	virtual bool hasDiskChanged() override final { return !m_diskInDrive; }
 
 	// Returns the currently selected side
-	virtual bool getCurrentSide() override final { return m_floppySide == DiskSurface::dsUpper; };
+	virtual bool getCurrentSide() override final { return m_floppySide == DiskSurface::dsUpper; }
 
 	// Return the current track number we're on
-	virtual unsigned char getCurrentCylinderNumber() override final { return m_currentTrack; };
+	virtual unsigned char getCurrentCylinderNumber() override final { return m_currentTrack; }
 
-	// Return TRUE if the currently insrted disk is write protected
-	virtual bool isWriteProtected() override final { return m_writeProtected; };
+	// Return TRUE if the currently inserted disk is write protected
+	virtual bool isWriteProtected() override final { return m_writeProtected; }
 
 	// Get the speed at this position.  1000=100%.  
 	virtual int getMFMSpeed(const int mfmPositionBits) override final;
@@ -521,7 +521,7 @@ public:
 	virtual bool resetDrive(int trackNumber) override final;
 
 	// Set to TRUE if turbo writing is allowed (this is a sneaky DMA bypass trick)
-	virtual bool canTurboWrite() { return true; };
+	virtual bool canTurboWrite() { return true; }
 
 };
 
