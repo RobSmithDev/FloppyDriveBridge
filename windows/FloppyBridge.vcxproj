@@ -85,7 +85,7 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>FloppyBridge</TargetName>
     <TargetExt>_x64.dll</TargetExt>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)..\FloppyBridge;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

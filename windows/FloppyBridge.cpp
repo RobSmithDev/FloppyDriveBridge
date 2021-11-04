@@ -561,6 +561,11 @@ extern "C" {
         if (errorMessage)
             if (strlen(bridgeDriverHandle->lastMessage)) *errorMessage = bridgeDriverHandle->lastMessage; else *errorMessage = NULL;
 
+        if (!result) {
+            delete bridgeDriverHandle->bridge;
+            bridgeDriverHandle->bridge = nullptr;
+        }
+
         return result;
     }
 
