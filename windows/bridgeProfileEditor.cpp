@@ -269,7 +269,7 @@ void BridgeProfileEditor::onDriverSelected() {
 		w = GetDlgItem(m_dialogBox, IDC_MODE);
 		CommonBridgeTemplate::BridgeMode mode = (CommonBridgeTemplate::BridgeMode)SendMessage(w, CB_GETCURSEL, 0, 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_AUTOCACHE), (info->configOptions & CONFIG_OPTIONS_AUTOCACHE) != 0);
-		EnableWindow(GetDlgItem(m_dialogBox, IDC_SMART), ((info->configOptions & CONFIG_OPTIONS_SMARTSPEED) != 0) && ((mode == CommonBridgeTemplate::BridgeMode::bmFast) || (mode == CommonBridgeTemplate::BridgeMode::bmCompatiable)));   // extra
+		EnableWindow(GetDlgItem(m_dialogBox, IDC_SMART), ((info->configOptions & CONFIG_OPTIONS_SMARTSPEED) != 0) && ((mode == CommonBridgeTemplate::BridgeMode::bmFast) || (mode == CommonBridgeTemplate::BridgeMode::bmCompatible)));   // extra
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_CABLE), (info->configOptions & CONFIG_OPTIONS_DRIVE_AB) != 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_AUTODETECT), (info->configOptions & CONFIG_OPTIONS_COMPORT_AUTODETECT) != 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_COMPORT), ((info->configOptions & CONFIG_OPTIONS_COMPORT) != 0) && (SendMessage(GetDlgItem(m_dialogBox, IDC_AUTODETECT), BM_GETCHECK, 0,0)== BST_UNCHECKED));
