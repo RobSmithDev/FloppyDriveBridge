@@ -413,7 +413,7 @@ DiagnosticResponse ArduinoInterface::attemptToSync(std::string& versionString, S
 				port.closePort();
 				return DiagnosticResponse::drErrorReadingVersion;
 			}
-			if (((counterNoData % 10) == 9) && (bytesRead == 0)) {
+			if (((counterNoData % 7) == 6) && (bytesRead == 0)) {
 				// Give it a kick
 				buffer[0] = COMMAND_VERSION;
 				size = port.write(&buffer[0], 1);
@@ -494,7 +494,7 @@ DiagnosticResponse ArduinoInterface::openPort(const std::wstring& portName, bool
 	// it's possible theres still redundant data in the buffer
 	char buffer[2];
 	int counter = 0;
-	for (;;) {
+	while (m_comPort.getBytesWaiting()) {
 		unsigned long size = m_comPort.read(buffer, 1);
 		if (size < 1)
 			if (counter++ >= 5) break;
@@ -1671,8 +1671,19 @@ void ArduinoInterface::enumeratePorts(std::vector<std::wstring>& portList) {
 	SerialIO prt;
 	prt.enumSerialPorts(prts);
 
-	for (const SerialIO::SerialPortInformation& port : prts)
+	for (const SerialIO::SerialPortInformation& port : prts) {
+		// Skip any Greaseweazle boards 
+		if ((port.vid == 0x1209) && (port.pid == 0x4d69)) continue;
+		if ((port.vid == 0x1209) && (port.pid == 0x0001)) continue;
+		if (port.productName == L"Greaseweazle") continue;
+		if (port.instanceID.find(L"\\GW") != std::wstring::npos) continue;
+
+		// Skip Supercard pro
+		if (port.portName.find(L"SCP-JIM") != std::wstring::npos) continue;
+		if (port.portName.find(L"Supercard Pro") != std::wstring::npos) continue;
+
 		portList.push_back(port.portName);
+	}
 }
 
 
