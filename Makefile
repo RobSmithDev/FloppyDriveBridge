@@ -1,3 +1,4 @@
+CXX    ?= g++
 TARGET  = FloppyBridge.so
 
 SOURCE  = floppybridge/ArduinoFloppyBridge.cpp \
@@ -18,7 +19,7 @@ CPPFLAGS +=-shared -fPIC -ldl -Ifloppybridge -Iwindows
 .PHONY : all clean
 
 $(TARGET) : $(SOURCE)
-	g++ $(CPPFLAGS) -o $(TARGET) $(SOURCE)
+	$(CXX) $(CPPFLAGS) -o $(TARGET) $(SOURCE)
 
 all : $(TARGET)
 
