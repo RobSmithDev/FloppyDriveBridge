@@ -20,20 +20,20 @@ The majority is covered by the GNU GPL3 with the exception of:
 	Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
-February 2022: Fixed random crash in Rotation Extractor
+* February 2022: Fixed random crash in Rotation Extractor
 			   Further stability improvements for Linux (or rather not-Windows)
-Janurary 2022: Added support for Supercard Pro (V1.3 firmware required)
+* Janurary 2022: Added support for Supercard Pro (V1.3 firmware required)
                Changed read mode to use a more accurate PLL (taken from SCP design from SCP.cpp in *UAE) which **improves compatability with some games**
 			   Added support for DrawBridge new PLL read command for better accuracy (Firmware 1.9.23) - HIGHLY recommended
 			   Fixed a few bugs in rotation extractore that caused a few crashes
 			   In "Normal" mode, if a perfect revolution cannot be guessed it automatically switches to compatiable for that track
 			   Fixed 64-Bit support for Greaseweazle under some linux distros
-October 2021: Support for HD disks, turbo speed and a few other things - Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
+* October 2021: Support for HD disks, turbo speed and a few other things - Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
               Fixed 64-bit build with the FTDI driver
-19th June 2021: Massivly improve write system.  Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
+* 19th June 2021: Massivly improve write system.  Requires new disk.cpp from https://github.com/RobSmithDev/WinUAE
                 Small update for Bridge to support 'no-click' option 
                 Fixed some issues with thread scheduling on Linux (Pi)
-October 2021:   Added HD support, 'Turbo' mode, a DLL version, and loads of bug fixes
+* October 2021:   Added HD support, 'Turbo' mode, a DLL version, and loads of bug fixes
 
 # Supported Devices:
 ## DrawBridge aka Arduino Reader/Writer at https://amiga.robsmithdev.co.uk
