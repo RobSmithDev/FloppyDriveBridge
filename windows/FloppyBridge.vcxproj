@@ -73,7 +73,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>FloppyBridge</TargetName>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>C:\Program Files\WinUAE\plugins</OutDir>
     <IncludePath>$(ProjectDir)..\FloppyBridge;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -85,7 +85,7 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>FloppyBridge</TargetName>
     <TargetExt>_x64.dll</TargetExt>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>C:\Program Files\WinUAE\plugins</OutDir>
     <IncludePath>$(ProjectDir)..\FloppyBridge;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -103,6 +103,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -122,6 +123,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,6 +143,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\floppybridge;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -160,6 +163,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -181,6 +185,7 @@
     <ClInclude Include="..\floppybridge\ftdi.h" />
     <ClInclude Include="..\floppybridge\GreaseWeazleBridge.h" />
     <ClInclude Include="..\floppybridge\GreaseWeazleInterface.h" />
+    <ClInclude Include="..\floppybridge\pll.h" />
     <ClInclude Include="..\floppybridge\RotationExtractor.h" />
     <ClInclude Include="..\floppybridge\SerialIO.h" />
     <ClInclude Include="..\floppybridge\SupercardProBridge.h" />
@@ -197,6 +202,7 @@
     <ClCompile Include="..\floppybridge\ftdi.cpp" />
     <ClCompile Include="..\floppybridge\GreaseWeazleBridge.cpp" />
     <ClCompile Include="..\floppybridge\GreaseWeazleInterface.cpp" />
+    <ClCompile Include="..\floppybridge\pll.cpp" />
     <ClCompile Include="..\floppybridge\RotationExtractor.cpp" />
     <ClCompile Include="..\floppybridge\SerialIO.cpp" />
     <ClCompile Include="..\floppybridge\SupercardProBridge.cpp" />

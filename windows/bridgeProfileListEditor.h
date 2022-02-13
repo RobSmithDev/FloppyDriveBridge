@@ -51,6 +51,8 @@ private:
 	// Trigger redrawing the selected item
 	void redrawSelectedItem();
 
+	// Should check for updates?
+	void setShouldCheckForUpdates(bool shouldCheck);
 public:
 	BridgeProfileListEditor(HINSTANCE hInstance, HWND hwndParent, std::vector<HBITMAP>& m_bridgeLogos, std::unordered_map<unsigned int, BridgeConfig*>& profileList);
 	~BridgeProfileListEditor();
@@ -60,4 +62,7 @@ public:
 
 	// Dialog window message handler
 	INT_PTR handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	// Returns TRUE if we shoudl auto-check for updates
+	static bool shouldAutoCheckForUpdates();
 };

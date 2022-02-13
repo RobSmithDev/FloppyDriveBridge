@@ -18,8 +18,10 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <mutex>
 #include "RotationExtractor.h"
 #include "SerialIO.h"
+#include "pll.h"
 
 namespace SuperCardPro {
 
@@ -51,6 +53,8 @@ namespace SuperCardPro {
 		pr_NoDisk = 0x11,			// no disk in drive
 		pr_BadBaud = 0x12,			// bad baud rate selected
 		pr_BadCmdOnPort = 0x13,		// command is not available for this type of port
+		pr_NoStream = 0x14,			// stream attempted to be stop when it was not occurring!
+		pr_Overrun = 0x15,			// buffer overrun occurred
 		pr_Ok = 0x4F,				// packet good(letter 'O' for OK)
 
 
@@ -88,6 +92,8 @@ namespace SuperCardPro {
 		DoCMD_LOADRAM_USB = 0xAA, // get data from USB and store in buffer
 		DoCMD_SENDRAM_232 = 0xAB, // send data from buffer to the serial port
 		DoCMD_LOADRAM_232 = 0xAC, // get data from the serial port and store in buffer
+		DoCMD_STARTSTREAM = 0xAE, // start streaming flux data from the drive (requires firmware 1.3)
+		DoCMD_STOPSTREAM = 0xAF, // Stop an active stream
 		DoCMD_SCPInfo = 0xD0, // get info about SCP hardware / firmware
 		DoCMD_SETBAUD1 = 0xD1, // sets the baud rate of port labeled RS232, // 1
 		DoCMD_SETBAUD2 = 0xD2 // sets the baud rate of port labeled RS232, // 2
@@ -99,6 +105,8 @@ namespace SuperCardPro {
 		scpInUse,
 		scpNoDiskInDrive,
 		scpWriteProtected,
+		scpFirmwareTooOld,
+		scpOverrun,
 		scpUnknownError
 	};
 
@@ -108,15 +116,16 @@ namespace SuperCardPro {
 		SerialIO		m_comPort;
 		bool			m_diskInDrive;
 		bool			m_motorIsEnabled = false;
-		bool			m_shouldAbortReading = false;
 		bool			m_isWriteProtected = false;
 		bool			m_useDriveA = false;
 		bool			m_isAtTrack0 = false;
 		int				m_currentTrack = -1;
 		bool			m_isHDMode = false;
-		uint16_t*		m_dataBuffer = nullptr;
-		unsigned int	m_dataBufferLength = 0;
 		bool			m_selectStatus = false;
+		std::mutex      m_protectAbort;
+		bool			m_abortStreaming = false;
+		bool			m_abortSignalled = true;
+		bool			m_isStreaming = false;
 
 		struct {
 			unsigned char hardwareVersion =0, hardwareRevision =0;
@@ -138,10 +147,7 @@ namespace SuperCardPro {
 		bool sendCommand(const SCPCommand command, const unsigned char* payload, const unsigned char payloadLength, SCPResponse& response, bool readResponse = true);
 
 		// Read ram from the SCP
-		bool readSCPRam(const unsigned int offset, const unsigned int length);
-
-		// Allocate the m_dataBuffer
-		bool allocateBuffer(unsigned int size);
+		//bool readSCPRam(const unsigned int offset, const unsigned int length);
 	public:
 		// Constructor for this class
 		SCPInterface();
@@ -151,14 +157,14 @@ namespace SuperCardPro {
 
 		const bool isOpen() const { return m_comPort.isPortOpen(); };
 
-		inline bool isWriteProtected() const { return m_isWriteProtected; };
+		bool isWriteProtected() const { return m_isWriteProtected; };
 
 		// Attempts to open the reader running on the COM port number provided.  
-		SCPErr openPort(std::string& comPort, bool useDriveA);
+		SCPErr openPort(bool useDriveA);
 
-		// Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
-		// An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
-		SCPErr readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
+		// Reads a complete rotation of the disk, and returns it using the callback function whcih can return FALSE to stop
+		// An instance of PLL is required which contains a rotation extractor.  This is purely to save on re-allocations.  It is internally reset each time
+		SCPErr readRotation(PLL::BridgePLL& pll, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 			std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation);
 
 		// Turns on and off the reading interface.  dontWait disables the GW timeout waiting, so you must instead.  
@@ -173,7 +179,7 @@ namespace SuperCardPro {
 		// Select the track, this makes the motor seek to this position. Can return drRewindFailure, drSelectTrackError, drOK, drTrackRangeError
 		bool selectTrack(const unsigned char trackIndex, bool ignoreDiskInsertCheck = false);
 
-		// Special command that asks to do a 'seek to track -1' which isn't allowed but can be used for disk detection
+		// Special command that asks to do a 'seek to track -1' which isnt allowed but can be used for disk detection
 		bool performNoClickSeek();
 
 		// Choose which surface of the disk to read from.  Can return drError or drOK
@@ -183,9 +189,9 @@ namespace SuperCardPro {
 		SCPErr writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp);
 
 		// Attempt to abort reading
-		void abortReadStreaming();
+		bool abortReadStreaming();
 
-		// Check if a disk is present in the drive
+		// Check if  adisk is present in the drive
 		SCPErr checkForDisk(bool force);
 
 		// Closes the port down
@@ -193,6 +199,9 @@ namespace SuperCardPro {
 
 		// Switch the density mode
 		bool selectDiskDensity(bool hdMode);
+
+		// Returns the motor iddle (auto switch off) time
+		unsigned int getMotorIdleTimeoutTime();
 	};
 
 };

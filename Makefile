@@ -5,6 +5,7 @@ SOURCE  = floppybridge/ArduinoFloppyBridge.cpp \
           floppybridge/ArduinoInterface.cpp \
           floppybridge/CommonBridgeTemplate.cpp \
           floppybridge/ftdi.cpp \
+          floppybridge/pll.cpp \
           floppybridge/GreaseWeazleBridge.cpp \
           floppybridge/GreaseWeazleInterface.cpp \
           floppybridge/RotationExtractor.cpp \

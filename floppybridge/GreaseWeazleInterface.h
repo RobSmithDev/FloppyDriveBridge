@@ -18,6 +18,7 @@
 #include <vector>
 #include "RotationExtractor.h"
 #include "SerialIO.h"
+#include "pll.h"
 
 namespace GreaseWeazle {
 
@@ -114,7 +115,7 @@ namespace GreaseWeazle {
 	// <4BI3B21x
 	struct GWVersionInformation  {
 		unsigned char major, minor, is_main_firmware, max_cmd;
-		unsigned int sample_freq;   // sample_freq * 1e-6 = Mhz
+		uint32_t sample_freq;   // sample_freq * 1e-6 = Mhz
 		unsigned char hw_model, hw_submodel, usb_speed;
 
 		unsigned char padding[21];
@@ -122,8 +123,8 @@ namespace GreaseWeazle {
 
 	// <5H
 	struct GWDriveDelays {
-		unsigned short select_delay, step_delay;			// in uSec
-		unsigned short seek_settle_delay, motor_delay, watchdog_delay;  // in mSec
+		uint16_t select_delay, step_delay;			// in uSec
+		uint16_t seek_settle_delay, motor_delay, watchdog_delay;  // in mSec
 	};
 
 	// ## Cmd.SetBusType values
@@ -140,7 +141,7 @@ namespace GreaseWeazle {
 		BusType			m_currentBusType;
 		unsigned char	m_currentDriveIndex;
 		bool			m_diskInDrive;
-		bool			m_motorIsEnabled;
+		bool			m_motorIsEnabled{};
 		bool			m_shouldAbortReading = false;
 		bool			m_pinDskChangeAvailable = false;
 		bool			m_pinWrProtectAvailable = false;
@@ -149,10 +150,10 @@ namespace GreaseWeazle {
 		bool			m_inHDMode = false;
 
 		// Version information read during openPort
-		GWVersionInformation m_gwVersionInformation;
+		GWVersionInformation m_gwVersionInformation{};
 
 		// Delay settings
-		GWDriveDelays m_gwDriveDelays;
+		GWDriveDelays m_gwDriveDelays{};
 
 		// Apply and change the timeouts on the com port
 		void applyCommTimeouts(bool shortTimeouts);
@@ -177,16 +178,16 @@ namespace GreaseWeazle {
 		// Free me
 		~GreaseWeazleInterface();
 
-		const bool isOpen() const { return m_comPort.isPortOpen(); };
+		const bool isOpen() const { return m_comPort.isPortOpen(); }
 
 		// Returns the timr before the motor switches back off
 		int getMotorTimeout() const { return m_gwDriveDelays.watchdog_delay; }
 
-		inline bool supportsDiskChange() const { return m_pinDskChangeAvailable; };
-		inline bool isWriteProtected() const { return m_isWriteProtected; };
+		bool supportsDiskChange() const { return m_pinDskChangeAvailable; }
+		bool isWriteProtected() const { return m_isWriteProtected; }
 
 		// Change the disk capacity we're using
-		void setDiskCapacity(bool hd) { m_inHDMode = hd; };
+		void setDiskCapacity(bool hd) { m_inHDMode = hd; }
 
 		// Test the inserted disk and see if its HD or not
 		GWResponse checkDiskCapacity(bool& isHD);
@@ -195,8 +196,8 @@ namespace GreaseWeazle {
 		GWResponse openPort(const std::string& comPort, bool useDriveA);
 
 		// Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
-		// An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
-		GWResponse readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
+		// An instance of BridgePLL is required.  This is purely to save on re-allocations.  It is internally reset each time
+		GWResponse readRotation(PLL::BridgePLL& pll, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 			std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation);
 
 		// Turns on and off the reading interface.  dontWait disables the GW timeout waiting, so you must instead.  Returns drOK, drError, 
@@ -215,7 +216,7 @@ namespace GreaseWeazle {
 		GWResponse selectSurface(const DiskSurface side);
 
 		// Write data to the disk.  Can return drReadResponseFailed, drWriteProtected, drSerialOverrun, drWriteProtected, drOK
-		GWResponse writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp);
+		GWResponse writeCurrentTrackPrecomp(const unsigned char* mfmData, const uint16_t numBytes, const bool writeFromIndexPulse, bool usePrecomp);
 
 		// Attempt to abort reading
 		void abortReadStreaming();

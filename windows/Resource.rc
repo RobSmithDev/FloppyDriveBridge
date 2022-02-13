@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,10,0,0
- PRODUCTVERSION 0,10,0,0
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x3L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "RobSmithDev https://amiga.robsmithdev.co.uk"
             VALUE "FileDescription", "UAE Floppy Bridge https://amiga.robsmithdev.co.uk"
-            VALUE "FileVersion", "0.10.0.0"
+            VALUE "FileVersion", "1.0.0.0"
             VALUE "InternalName", "FloppyBridge.dll"
             VALUE "LegalCopyright", "Copyright (C) 2021 RobSmithDev"
             VALUE "OriginalFilename", "FloppyBridge.dll"
             VALUE "ProductName", "UAE Floppy Bridge"
-            VALUE "ProductVersion", "0.10.0.0"
+            VALUE "ProductVersion", "1.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -103,21 +103,23 @@ IDB_PATREON             BITMAP                  "patreon.bmp"
 // Dialog
 //
 
-IDD_PROFILELISTEDITOR DIALOGEX 0, 0, 367, 228
+IDD_PROFILELISTEDITOR DIALOGEX 0, 0, 381, 228
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "FloppyBridge - Profile Manager"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Static",IDC_PROFILELIST_TITLE,7,7,249,8,SS_NOPREFIX
-    PUSHBUTTON      "Check for Updates",IDC_CHECKUPDATES,259,7,72,24
-    LISTBOX         IDC_LIST1,7,33,353,167,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Check for Updates",IDC_CHECKUPDATES,266,5,76,14
+    LISTBOX         IDC_LIST1,7,33,367,167,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Create...",IDCREATE,7,206,50,14
     PUSHBUTTON      "Edit...",IDEDIT,61,206,50,14
     PUSHBUTTON      "Delete...",IDDELETE,115,206,50,14
-    DEFPUSHBUTTON   "OK",IDOK,257,206,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,310,206,50,14
-    CONTROL         "",IDC_PATREON,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE,334,7,26,24,WS_EX_TRANSPARENT
-    LTEXT           "url",IDC_URL_MAIN,7,18,250,8,SS_NOTIFY,WS_EX_TRANSPARENT
+    DEFPUSHBUTTON   "OK",IDOK,272,206,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,324,206,50,14
+    CONTROL         "",IDC_PATREON,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE,348,7,26,24,WS_EX_TRANSPARENT
+    LTEXT           "url",IDC_URL_MAIN,7,18,144,8,SS_NOTIFY,WS_EX_TRANSPARENT
+    CONTROL         "Check Automatically",IDC_AUTOCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,21,77,10
+    RTEXT           "",IDC_UPDATENOW,150,18,104,8,SS_NOTIFY,WS_EX_TRANSPARENT
 END
 
 IDD_PROFILEEDITOR DIALOGEX 0, 0, 323, 195
@@ -159,7 +161,7 @@ BEGIN
     IDD_PROFILELISTEDITOR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 360
+        RIGHTMARGIN, 374
         TOPMARGIN, 7
         BOTTOMMARGIN, 220
     END
@@ -192,6 +194,8 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     100, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0

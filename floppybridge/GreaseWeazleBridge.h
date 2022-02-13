@@ -19,7 +19,7 @@
 #include "floppybridge_abstract.h"
 #include "CommonBridgeTemplate.h"
 #include "GreaseWeazleInterface.h"
-
+#include "pll.h"
 
 class GreaseWeazleDiskBridge : public CommonBridgeTemplate {
 private:
@@ -88,18 +88,18 @@ protected:
 	virtual bool setCurrentCylinder(const unsigned int cylinder) override;
 
 	// If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
-	// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+	// Should perform the same operations as setCurrentCylinder in terms of disk change etc but without changing the current cylinder
 	// Return FALSE if this is not supported by the bridge
 	virtual bool performNoClickSeek() override;
 
 	// Called when data should be read from the drive.
-	//		rotationExtractor: supplied if you use it
+	//		pll:           supplied if you use it
 	//		maxBufferSize: Maximum number of RotationExtractor::MFMSample in the buffer.  If we're trying to detect a disk, this might be set VERY LOW
 	// 	    buffer:		   Where to save to.  When a buffer is saved, position 0 MUST be where the INDEX pulse is.  RevolutionExtractor will do this for you
 	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistent where the INDEX position is read back at
 	//		onRotation: A function you should call for each complete revolution received.  If the function returns FALSE then you should abort reading, else keep sending revolutions
 	// Returns: ReadResponse, explains its self
-	virtual ReadResponse readData(RotationExtractor& rotationExtractor, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
+	virtual ReadResponse readData(PLL::BridgePLL& pll, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
 		std::function<bool(RotationExtractor::MFMSample* mfmData, const unsigned int dataLengthInBits)> onRotation) override;
 
 	// Called when a cylinder revolution should be written to the disk.
@@ -113,6 +113,8 @@ protected:
 	// A manual way to check for disk change.  This is simulated by issuing a read message and seeing if there's any data.  Returns TRUE if data or an INDEX pulse was detected
 	// It's virtual as the default method issues a read and looks for data.  If you have a better implementation then override this
 	virtual bool attemptToDetectDiskChange() override;
+
+	;
 
 public:
 	GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, bool driveOnB);

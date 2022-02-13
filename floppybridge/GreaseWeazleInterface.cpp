@@ -17,6 +17,7 @@
 #include <cstring>
 #include "GreaseWeazleInterface.h"
 #include "RotationExtractor.h"
+#include "pll.h"
 
 #define ONE_NANOSECOND 1000000000UL
 #define BITCELL_SIZE_IN_NS 2000L
@@ -37,11 +38,11 @@ enum class FluxOp { Index = 1, Space = 2, Astable = 3};
 /* CMD_READ_FLUX */
 struct GWReadFlux {
 	/* Maximum ticks to read for (or 0, for no limit). */
-	unsigned long ticks;
+	uint32_t ticks;
 	/* Maximum index pulses to read (or 0, for no limit). */
-	unsigned short max_index;
+	uint16_t max_index;
 	/* Linger time, in ticks, to continue reading after @max_index pulses. */
-	unsigned long max_index_linger; /* default: 500 microseconds */
+	uint32_t max_index_linger; /* default: 500 microseconds */
 };
 
 /* CMD_WRITE_FLUX */
@@ -56,14 +57,14 @@ struct GWWriteFlux {
 
 struct Sequence {
 	unsigned char sequence;
-	unsigned short speed;     // speed compared to what it should be (for this sequence)
+	uint16_t speed;     // speed compared to what it should be (for this sequence)
 	bool atIndex;			// At index
 };
 
 // We're working in nanoseconds
 struct PLLData {
-	unsigned long freq = 0;			  // sample frequency in Hz
-	unsigned long ticks = 0;
+	uint32_t freq = 0;			  // sample frequency in Hz
+	uint32_t ticks = 0;
 	bool indexHit = false;
 };
 
@@ -87,7 +88,7 @@ std::wstring findPortNumber() {
 	SerialIO::enumSerialPorts(portList);
 
 	// Scan for items
-	std::wstring bestPort = L"";
+	std::wstring bestPort;
 	int maxScore = 0;
 
 	for (const SerialIO::SerialPortInformation& port : portList) {
@@ -313,7 +314,7 @@ GWResponse GreaseWeazleInterface::selectTrack(const unsigned char trackIndex, co
 		return GWResponse::drTrackRangeError; // no chance, it can't be done.
 	}
 
-	unsigned short newSpeed = m_gwDriveDelays.step_delay;
+	uint16_t newSpeed = m_gwDriveDelays.step_delay;
 	switch (searchSpeed) {
 		case TrackSearchSpeed::tssSlow:		newSpeed = 5000;  break;
 		case TrackSearchSpeed::tssNormal:	newSpeed = 3000;  break;
@@ -464,7 +465,7 @@ static unsigned int ticksToNSec(unsigned int ticks, unsigned int sampleFrequency
 
 // Look at the stream and count up the types of data
 void countSampleTypes(PLLData& pllData, std::queue<unsigned char>& queue, unsigned int& hdBits, unsigned int& ddBits) {
-	while (queue.size()) {
+	while (!queue.empty()) {
 
 		unsigned char i = queue.front();
 		if (i == 255) {
@@ -513,7 +514,7 @@ void countSampleTypes(PLLData& pllData, std::queue<unsigned char>& queue, unsign
 
 // Test the inserted disk and see if its HD or not
 GWResponse GreaseWeazleInterface::checkDiskCapacity(bool& isHD) {
-	GWReadFlux header;
+	GWReadFlux header{};
 	header.ticks = 0;
 	header.max_index = 1;
 	header.max_index_linger = nSecToTicks(50, m_gwVersionInformation.sample_freq);
@@ -657,7 +658,7 @@ void write28bit(int value, std::vector<unsigned char>& output) {
 }
 
 // Write data to the disk
-GWResponse GreaseWeazleInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp) {
+GWResponse GreaseWeazleInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, const uint16_t numBytes, const bool writeFromIndexPulse, bool usePrecomp) {
 	std::vector<unsigned char> outputBuffer;
 
 	// Original data was written from MSB down to LSB
@@ -802,9 +803,9 @@ GWResponse GreaseWeazleInterface::writeCurrentTrackPrecomp(const unsigned char* 
 }
 
 // Process queue and work out whats going on
-inline void unpackStreamQueue(std::queue<unsigned char>& queue, PLLData& pllData, RotationExtractor& extractor, bool isHDMode) {
+inline void unpackStreamQueue(std::queue<unsigned char>& queue, PLLData& pllData, PLL::BridgePLL& pll, bool isHDMode) {
 	// Run until theres not enough data left to process
-	while (queue.size()) {
+	while (!queue.empty()) {
 
 		unsigned char i = queue.front();
 		if (i == 255) {
@@ -831,68 +832,25 @@ inline void unpackStreamQueue(std::queue<unsigned char>& queue, PLLData& pllData
 		}
 		else {
 			if (i < 250) {
-				pllData.ticks += (int)i;
+				pllData.ticks += (int32_t)i;
 				queue.pop();
 			}
 			else {
 				if (queue.size() < 2) return;
 				queue.pop();				
-				pllData.ticks += (250 + (((unsigned int)i) - 250) * 255) + (queue.front() - 1);
+				pllData.ticks += (250 + (((int32_t)i) - 250) * 255) + ((int32_t)queue.front() - 1);
 				queue.pop();
 			}
 
 			// Work out the actual time this tick took in nanoSeconds.
-			unsigned int tickInNS = ticksToNSec(pllData.ticks, pllData.freq);
+			uint32_t tickInNS = ticksToNSec(pllData.ticks, pllData.freq);
 
 			// This is how the Amiga expects it
 			if (isHDMode) tickInNS *= 2;
 
-			// Enough bit-cells?
-			if (tickInNS > BITCELL_SIZE_IN_NS) {
-				
-				const int onePointFiveBitCells = BITCELL_SIZE_IN_NS + (BITCELL_SIZE_IN_NS / 2);
-				int sequence = tickInNS >= onePointFiveBitCells ? (tickInNS - onePointFiveBitCells) / BITCELL_SIZE_IN_NS : 0;
-				// This shouldnt ever happen
-				if (sequence < 0) sequence = 0;
-				
-
-				// Rare condition
-				if (sequence >= 3) {
-					// Account for the ending 01
-					tickInNS -= BITCELL_SIZE_IN_NS * 2;
-					sequence -= 2;
-
-					// Based on the rules we can't output a sequence this big and times must be accurate so we output as many 0000's as possible
-					while (sequence > 0) {
-						RotationExtractor::MFMSequenceInfo sample;
-						sample.mfm = RotationExtractor::MFMSequence::mfm0000;
-						unsigned int thisTicks = tickInNS;
-						if (thisTicks > BITCELL_SIZE_IN_NS * 4) thisTicks = BITCELL_SIZE_IN_NS * 4;
-						sample.timeNS = thisTicks;
-						tickInNS -= sample.timeNS;
-						extractor.submitSequence(sample, pllData.indexHit);
-						pllData.indexHit = false;
-						sequence -= 4;
-					}
-
-					// And follow it up with an 01
-					RotationExtractor::MFMSequenceInfo sample;
-					sample.mfm = RotationExtractor::MFMSequence::mfm01;
-					sample.timeNS = BITCELL_SIZE_IN_NS * 2;
-					extractor.submitSequence(sample, pllData.indexHit);
-					pllData.indexHit = false;
-				}
-				else {
-					RotationExtractor::MFMSequenceInfo sample;
-					sample.mfm = (RotationExtractor::MFMSequence)sequence;
-					sample.timeNS = tickInNS;
-
-					extractor.submitSequence(sample, pllData.indexHit);
-					pllData.indexHit = false;
-				}
-
-				pllData.ticks = 0;
-			}
+			pll.submitFlux(tickInNS, pllData.indexHit);
+			pllData.indexHit = false;
+			pllData.ticks = 0;
 		}
 	}
 
@@ -900,12 +858,12 @@ inline void unpackStreamQueue(std::queue<unsigned char>& queue, PLLData& pllData
 
 // Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
 // An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
-GWResponse GreaseWeazleInterface::readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
+GWResponse GreaseWeazleInterface::readRotation(PLL::BridgePLL& pll, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 	std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation) {	
 	GWReadFlux header;
 
-	const unsigned int extraTime = OVERLAP_SEQUENCE_MATCHES * (OVERLAP_EXTRA_BUFFER) * 8000;
-	if ((extractor.isInIndexMode()) || (!extractor.hasLearntRotationSpeed())) {
+	const uint32_t extraTime = OVERLAP_SEQUENCE_MATCHES * (OVERLAP_EXTRA_BUFFER) * 8000;
+	if ((pll.rotationExtractor()->isInIndexMode()) || (!pll.rotationExtractor()->hasLearntRotationSpeed())) {
 		header.ticks = 0;
 		header.max_index = 1;
 		header.max_index_linger = nSecToTicks((212 * 1000 * 1000) + extraTime, m_gwVersionInformation.sample_freq);
@@ -922,10 +880,7 @@ GWResponse GreaseWeazleInterface::readRotation(RotationExtractor& extractor, con
 	std::queue<unsigned char> queue;
 
 	// Reset ready for extraction
-	extractor.reset(m_inHDMode);
-
-	// Remind it if the 'index' data we want to sync to
-	extractor.setIndexSequence(startBitPatterns);
+	pll.prepareExtractor(m_inHDMode, startBitPatterns);
 
 	selectDrive(true);
 
@@ -935,7 +890,7 @@ GWResponse GreaseWeazleInterface::readRotation(RotationExtractor& extractor, con
 		if (!m_motorIsEnabled) selectDrive(false);
 		return GWResponse::drReadResponseFailed;
 	}
-	int failCount = 0;
+	int32_t failCount = 0;
 
 	// Buffer to read into
 	unsigned char tempReadBuffer[64] = { 0 };
@@ -948,10 +903,10 @@ GWResponse GreaseWeazleInterface::readRotation(RotationExtractor& extractor, con
 
 	do {
 		// More efficient to read several bytes in one go		
-		unsigned long bytesAvailable = m_comPort.getBytesWaiting();
+		uint32_t bytesAvailable = m_comPort.getBytesWaiting();
 		if (bytesAvailable < 1) bytesAvailable = 1;
 		if (bytesAvailable > sizeof(tempReadBuffer)) bytesAvailable = sizeof(tempReadBuffer);
-		unsigned long bytesRead = m_comPort.read(tempReadBuffer, m_shouldAbortReading ? 1 : bytesAvailable);
+		uint32_t bytesRead = m_comPort.read(tempReadBuffer, m_shouldAbortReading ? 1 : bytesAvailable);
 		if (bytesRead<1) {
 			failCount++;
 			if (failCount > 10) break;
@@ -961,29 +916,29 @@ GWResponse GreaseWeazleInterface::readRotation(RotationExtractor& extractor, con
 		// If theres this many we can process as this is the maximum we need to process
 		if ((!m_shouldAbortReading) && (bytesRead)) {
 
-			for (unsigned int a = 0; a < bytesRead; a++) {
+			for (uint32_t a = 0; a < bytesRead; a++) {
 				queue.push(tempReadBuffer[a]);
 				zeroDetected |= tempReadBuffer[a] == 0;
 			}
 
-			unpackStreamQueue(queue, pllData, extractor, m_inHDMode);
+			unpackStreamQueue(queue, pllData, pll, m_inHDMode);
 
 			// Is it ready to extract?
-			if (extractor.canExtract()) {
-				unsigned int bits = 0;
+			if (pll.canExtract()) {
+				uint32_t bits = 0;
 				// Go!
-				if (extractor.extractRotation(firstOutputBuffer, bits, maxOutputSize)) {
+				if (pll.extractRotation(firstOutputBuffer, bits, maxOutputSize)) {
 					if (!onRotation(&firstOutputBuffer, bits)) {
 						// And if the callback says so we stop. - unsupported at present
 						abortReadStreaming();
 					}
 					// Always save this back
-					extractor.getIndexSequence(startBitPatterns);
+					pll.getIndexSequence(startBitPatterns);
 				}
 			}
 		}
 		else {
-			for (unsigned int a = 0; a < bytesRead; a++) zeroDetected |= tempReadBuffer[a] == 0;
+			for (uint32_t a = 0; a < bytesRead; a++) zeroDetected |= tempReadBuffer[a] == 0;
 		}
 	} while (!zeroDetected);
 

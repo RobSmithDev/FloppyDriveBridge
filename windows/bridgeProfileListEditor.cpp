@@ -5,7 +5,6 @@
 #include "bridgeProfileEditor.h"
 #include "resource.h"
 #include "FloppyBridge.h"
-//#include 
  
 // Returns a pointer to information about the project
 void handleAbout(bool checkForUpdates, BridgeAbout** output);
@@ -202,7 +201,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			return TRUE;
 
 		case WM_SETCURSOR: 
-			if (((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_PATREON))) {
+			if (((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_PATREON)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_UPDATENOW))) {
 				SetCursor(m_handPoint);
 				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG)TRUE);
 				return TRUE;
@@ -210,7 +209,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			break;
 
 		case WM_CTLCOLORSTATIC: 
-			if (((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_PATREON))) {
+			if (((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_PATREON)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_UPDATENOW))) {
 				SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
 				SetBkColor((HDC)wParam, GetSysColor(COLOR_3DFACE));
 				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
@@ -237,7 +236,12 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 				return TRUE;
 
 			case IDC_URL_MAIN:
+			case IDC_UPDATENOW:
 				handleURLClicked(false);
+				return TRUE;
+
+			case IDC_AUTOCHECK:
+				setShouldCheckForUpdates(SendMessage(GetDlgItem(hwnd, IDC_AUTOCHECK), BM_GETCHECK, 0,0));
 				return TRUE;
 
 			case IDC_PATREON:
@@ -299,6 +303,27 @@ void BridgeProfileListEditor::doCheckForUpdates() {
 	}
 }
 
+// Returns TRUE if we shoudl auto-check for updates
+bool BridgeProfileListEditor::shouldAutoCheckForUpdates() {
+	WCHAR buf[256];
+	buf[0] = '\0';
+	LONG len = 10;
+	RegQueryValueW(HKEY_CURRENT_USER, L"Software\\FloppyBridge\\AutoUpdateCheck", buf, &len);
+
+	return _wtoi(buf) == 1;
+}
+
+// Should check for updates?
+void BridgeProfileListEditor::setShouldCheckForUpdates(bool shouldCheck) {
+	char buf[256];
+	buf[0] = shouldCheck ? '1' : '0';
+	buf[1] = '\0';
+	LONG len = 1;
+	RegSetValueA(HKEY_CURRENT_USER, "Software\\FloppyBridge\\AutoUpdateCheck", REG_SZ, buf, strlen(buf));
+}
+
+
+
 // Init dialog
 void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 	m_dialogBox = hwnd;
@@ -324,8 +349,23 @@ void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 	 
 	EnableWindow(GetDlgItem(m_dialogBox, IDEDIT), FALSE);
 	EnableWindow(GetDlgItem(m_dialogBox, IDDELETE), FALSE);
-
 	SendMessage(GetDlgItem(m_dialogBox, IDC_PATREON), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)m_patreon);
+
+	// Auto-update check checkbox
+	w = GetDlgItem(hwnd, IDC_AUTOCHECK);
+	SendMessage(w, BM_SETCHECK, shouldAutoCheckForUpdates() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+	if (shouldAutoCheckForUpdates()) {
+		BridgeAbout* about;
+
+		SetCursor(m_busyCursor);
+		handleAbout(true, &about);
+		if (about->isUpdateAvailable) {
+			char buffer[128];
+			sprintf_s(buffer, "Update V%i.%i Available", about->updateMajorVersion, about->updateMinorVersion);
+			SetWindowTextA(GetDlgItem(hwnd, IDC_UPDATENOW), buffer);;
+		}		
+	}
 }
 
 

@@ -6,6 +6,7 @@
 * Based on the documentation and hardware by Jim Drew at
 * https://www.cbmstuff.com/
 * 
+* This requires firmware V1.3
 *
 * This file, along with currently active and supported interfaces
 * are maintained from by GitHub repo at
@@ -16,10 +17,11 @@
 #include <vector>
 #include <queue>
 #include <cstring>
-#include "SuperCardProInterface.h"
-#include "RotationExtractor.h"
 #include <thread>
-
+#include <deque>
+#include "SuperCardProInterface.h"
+#include "pll.h"
+#include "RotationExtractor.h"
 #ifdef _WIN32
 #include <winsock.h>
 #pragma comment(lib,"Ws2_32.lib")
@@ -27,49 +29,43 @@
 #include <arpa/inet.h>
 #endif
 
+#define MOTOR_AUTOOFF_DELAY 10000
+
 #define BITCELL_SIZE_IN_NS 2000L
 
-#define BIT_READ_BITCELL_SIZE_8     (1 << 1)
-#define BIT_READ_BITCELL_SIZE_16    (0 << 1)
-
 #define BIT_READ_FROM_INDEX         (1 << 0)
+
+
+#define STREAMFLAGS_RAWFLUX				(0 << 4)
+
+#define STREAMFLAGS_RESOLUTION_25NS     (0 << 2)
+#define STREAMFLAGS_RESOLUTION_50NS     (1 << 2)
+#define STREAMFLAGS_RESOLUTION_100NS    (2 << 2)
+#define STREAMFLAGS_RESOLUTION_200NS    (3 << 2)
+
+#define FLAGS_BITSIZE_8BIT        (1 << 1)
+#define FLAGS_BITSIZE_16BIT       (0 << 1)
+
+#define STREAMFLAGS_IMMEDIATEREAD       (0 << 0)
+#define STREAMFLAGS_STREAMFROMINDEX     (1 << 0)
 
 using namespace SuperCardPro;
 
 
 // Constructor for this class
-SCPInterface::SCPInterface() : m_diskInDrive(false), m_isWriteProtected(true)
-{
+SCPInterface::SCPInterface() {
+	m_diskInDrive = false;
+	m_isWriteProtected = true;
+	m_abortSignalled = false;
+	m_isStreaming = false;
+	m_abortStreaming = true;
 }
 
 // Free me
 SCPInterface::~SCPInterface() {
+	abortReadStreaming();
 	closePort();
-
-	if (m_dataBuffer) free(m_dataBuffer);
-	m_dataBuffer = nullptr;
 }
-
-// Allocate the m_dataBuffer
-bool SCPInterface::allocateBuffer(unsigned int size) {
-	if (!m_dataBuffer) {
-		m_dataBuffer = (uint16_t*)malloc(size);
-		if (!m_dataBuffer) return false;
-		m_dataBufferLength = size;
-		return true;
-	}
-
-	if (m_dataBufferLength < size) {
-		uint16_t* newBuffer = (uint16_t*)realloc(m_dataBuffer, size);
-		if (!newBuffer) return false;
-		m_dataBuffer = newBuffer;
-		m_dataBufferLength = size;
-		return true;
-	}
-
-	return true;
-}
-
 
 bool SCPInterface::sendCommand(const SCPCommand command, SCPResponse& response) {
 	return sendCommand(command, NULL, 0, response);
@@ -113,7 +109,7 @@ bool SCPInterface::sendCommand(const SCPCommand command, const unsigned char* pa
 
 
 // Attempts to open the reader running on the COM port number provided.  Port MUST support 2M baud
-SCPErr SCPInterface::openPort(std::string& comPort, bool useDriveA) {
+SCPErr SCPInterface::openPort(bool useDriveA) {
 	closePort();
 	m_useDriveA = useDriveA;
 
@@ -121,31 +117,19 @@ SCPErr SCPInterface::openPort(std::string& comPort, bool useDriveA) {
 	m_motorIsEnabled = false;
 
 	std::vector<SerialIO::SerialPortInformation> ports;
-	m_comPort.enumSerialPorts(ports);
+	SerialIO::enumSerialPorts(ports);
 
-	if (comPort.length()) {
-		std::wstring wComport;
-		quicka2w(comPort, wComport);
-		switch (m_comPort.openPort(wComport)) {
-		case SerialIO::Response::rInUse:return SCPErr::scpInUse;
-		case SerialIO::Response::rNotFound:return SCPErr::scpNotFound;
-		case SerialIO::Response::rOK: break;
-		default: return SCPErr::scpUnknownError;
-		}
-	}
-	else {
-		// Find the port
-		for (const SerialIO::SerialPortInformation& port : ports) {
-			if ((port.portName.find(L"SCP-JIM") != std::wstring::npos) || (port.portName.find(L"Supercard Pro") != std::wstring::npos)) {
-				switch (m_comPort.openPort(port.portName)) {
-				case SerialIO::Response::rInUse:return SCPErr::scpInUse;
-				case SerialIO::Response::rNotFound:return SCPErr::scpNotFound;
-				case SerialIO::Response::rOK: break;
-				default: return SCPErr::scpUnknownError;
-				}
+	// Find the port
+	for (const SerialIO::SerialPortInformation& port : ports) {
+		if ((port.portName.find(L"SCP-JIM") != std::wstring::npos) || (port.portName.find(L"Supercard Pro") != std::wstring::npos)) {
+			switch (m_comPort.openPort(port.portName)) {
+			case SerialIO::Response::rInUse:return SCPErr::scpInUse;
+			case SerialIO::Response::rNotFound:return SCPErr::scpNotFound;
+			case SerialIO::Response::rOK: break;
+			default: return SCPErr::scpUnknownError;
 			}
-			if (m_comPort.isPortOpen()) break;
 		}
+		if (m_comPort.isPortOpen()) break;
 	}
 	if (!m_comPort.isPortOpen()) SCPErr::scpNotFound;
 
@@ -179,6 +163,12 @@ SCPErr SCPInterface::openPort(std::string& comPort, bool useDriveA) {
 	m_firmwareVersion.hardwareRevision = data[0] & 0xFF;
 	m_firmwareVersion.firmwareVersion = data[1] >> 4;
 	m_firmwareVersion.firmwareRevision = data[1] & 0xFF;
+
+	// Check we're on v1.3 of the firmware
+	if ((m_firmwareVersion.firmwareVersion <= 1) && (m_firmwareVersion.firmwareRevision < 3)) {
+		m_comPort.closePort();
+		return SCPErr::scpFirmwareTooOld;
+	}
 
 	// Turn everything off
 	sendCommand(SCPCommand::DoCMD_MTRAOFF, response);  
@@ -252,18 +242,24 @@ void SCPInterface::closePort() {
 	m_comPort.closePort();
 }
 
+// Returns the motor idle (auto switch off) time
+unsigned int SCPInterface::getMotorIdleTimeoutTime() {
+	return MOTOR_AUTOOFF_DELAY;
+}
+
+
 // Turns on and off the reading interface
 bool SCPInterface::enableMotor(const bool enable, const bool dontWait) {
 	SCPResponse response;
-
+	
 	if (enable) {
 		uint16_t payload[5];
 		if (dontWait) {
 			payload[0] = htons(1000);   // Drive select delay (microseconds)
 			payload[1] = htons(5000);   // Step command delay (microseconds)
-			payload[2] = htons(0);      // Motor on delay (milliseconds)
-			payload[3] = htons(1);   // Track Seek Delay (Milliseconds)
-			payload[4] = htons(0);   // Before turning off the motor automatically (milliseconds)
+			payload[2] = htons(1);      // Motor on delay (milliseconds)
+			payload[3] = htons(1);      // Track Seek Delay (Milliseconds)
+			payload[4] = htons(MOTOR_AUTOOFF_DELAY);   // Before turning off the motor automatically (milliseconds)
 		}
 		else {
 			payload[0] = htons(1000);   // Drive select delay (microseconds)
@@ -354,7 +350,7 @@ void SCPInterface::checkPins() {
 	}
 	if (!m_motorIsEnabled) selectDrive(false);
 
-	unsigned short status = (bytes[1] | (bytes[0] << 8));
+	uint16_t status = (bytes[1] | (bytes[0] << 8));
 	m_isWriteProtected = (status & (1 << 7)) == 0;
 	m_diskInDrive = (status & (1 << 6)) !=0;
 	m_isAtTrack0 = (status & (1 << 5)) == 0;
@@ -414,7 +410,7 @@ inline int readBit(const unsigned char* buffer, const unsigned int maxLength, in
 SCPErr SCPInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, const unsigned short numBytes, const bool writeFromIndexPulse, bool usePrecomp) {
 	std::vector<uint16_t> outputBuffer;
 
-	// Original data was written from MSB down to LSB
+	// Original data was written from MSB downto LSB
 	int pos = 0;
 	int bit = 7;
 	unsigned char sequence = 0xAA;  // start at 10101010
@@ -437,7 +433,7 @@ SCPErr SCPInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, cons
 		if (count > 5) count = 5;  // max we support 01, 001, 0001, 00001
 		
 		// Calculate the time for this in nanoseconds
-		int timeInNS = extraTimeFromPrevious + (count * 2000);     // 2=4000, 3=6000, 4=8000, (5=10000 although is isnt strictly allowed)
+		int timeInNS = extraTimeFromPrevious + (count * 2000);     // 2=4000, 3=6000, 4=8000, (5=10000 although is isn't strictly allowed)
 
 		if (usePrecomp) {
 			switch (sequence) {
@@ -502,7 +498,7 @@ SCPErr SCPInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, cons
 	unsigned char buffer[5];
 	header.transferLength = htonl((u_long)outputBuffer.size());
 	memcpy(buffer, &header.transferLength, 4);
-	buffer[4] = BIT_READ_BITCELL_SIZE_16 | (writeFromIndexPulse ? BIT_READ_FROM_INDEX : 0);
+	buffer[4] = FLAGS_BITSIZE_16BIT | (writeFromIndexPulse ? BIT_READ_FROM_INDEX : 0);
 
 	if (!sendCommand(SCPCommand::DoCMD_WRITEFLUX, buffer, 5, response, true)) return SCPErr::scpUnknownError;
 	if (!m_motorIsEnabled) selectDrive(false);
@@ -516,38 +512,17 @@ SCPErr SCPInterface::writeCurrentTrackPrecomp(const unsigned char* mfmData, cons
 	return SCPErr::scpOK;
 }
 
-struct ReadResponseRotation {
-	uint32_t indexTime, bitcells;
-};
-
 // Switch the density mode
 bool SCPInterface::selectDiskDensity(bool hdMode) {
 	m_isHDMode = hdMode;
 	return true;
 }
 
-// Read ram from the SCP
-bool SCPInterface::readSCPRam(const unsigned int offset, const unsigned int length) {
-	if (!allocateBuffer(length)) return false;
 
-	// Now ask for the data
-	uint32_t params[2] = { htonl(offset), htonl(length) };
-	SCPResponse response;
+#ifndef _WIN32
+#define USE_THREADDED_READER_SCP
+#endif
 
-	bool ret = sendCommand(SCPCommand::DoCMD_SENDRAM_USB, (unsigned char*)params, sizeof(params), response, false);
-	if (!ret)  return false;
-
-	if (m_comPort.read(m_dataBuffer, length) != length) return false;
-
-	// Read the command
-	SCPCommand cmd;
-	if (m_comPort.read((unsigned char*)&cmd, 1) != 1) return false;
-	if (cmd != SCPCommand::DoCMD_SENDRAM_USB) return false;
-
-	// Read the status
-	if (m_comPort.read(&response, 1) != 1) return false;
-	return (response == SCPResponse::pr_Ok);
-}
 
 // Test if its an HD disk
 bool SCPInterface::checkDiskCapacity(bool& isHD) {
@@ -559,109 +534,187 @@ bool SCPInterface::checkDiskCapacity(bool& isHD) {
 
 	// Issue a read-request
 	selectDrive(true);
-	unsigned char payload[] = { 1, BIT_READ_BITCELL_SIZE_16 };
 
-	bool ret = sendCommand(SCPCommand::DoCMD_READFLUX, payload, 2, response);
-	
-	if (!m_motorIsEnabled) selectDrive(false);
-
+	// Request real-time flux stream, 8-bit resolution, and 50ns timings.
+	const unsigned char payload[1] = { STREAMFLAGS_RESOLUTION_50NS | FLAGS_BITSIZE_16BIT | STREAMFLAGS_IMMEDIATEREAD | STREAMFLAGS_RAWFLUX };
+	bool ret = sendCommand(SCPCommand::DoCMD_STARTSTREAM, payload, 1, response);
 	if (!ret) {
-		if ((response == SCPResponse::pr_NotReady) || (response == SCPResponse::pr_NoDisk)) m_diskInDrive = false;
-		// Turn the motor back off if we started it
-		if (!alreadySpun) enableMotor(false, false);
+		if ((response == SCPResponse::pr_NotReady) || (response == SCPResponse::pr_NoDisk)) {
+			m_diskInDrive = false;
+			return false;
+		}
 		return false;
 	}
 
-	// Fetch what happened
-	ret = sendCommand(SCPCommand::DoCMD_GETFLUXINFO, response);
-	if (!ret) {
-		if ((response == SCPResponse::pr_NotReady) || (response == SCPResponse::pr_NoDisk)) m_diskInDrive = false;
-		// Turn the motor back off if we started it
-		if (!alreadySpun) enableMotor(false, false);
-		return false;
-	}
 
-	// The function receives data for the potential full 5
-	ReadResponseRotation rotations[5];
-	if (m_comPort.read(rotations, sizeof(rotations)) != sizeof(rotations)) {
-		// Turn the motor back off if we started it
-		if (!alreadySpun) enableMotor(false, false);
-		return false;
-	}
-	
-	rotations[0].indexTime = htonl(rotations[0].indexTime);
-	rotations[0].bitcells = htonl(rotations[0].bitcells);
 
-	// Stop! probably no disk in the drive
-	if (rotations[0].bitcells < 10) {
-		if (!alreadySpun) enableMotor(false, false);
-		m_diskInDrive = false;
-		return false;
-	}	
+#ifdef USE_THREADDED_READER_SCP
+	std::mutex safetyLock;
+	// I was using a deque, but its much faster to just keep switching between two vectors
+	std::vector<unsigned char> readBuffer;
+	readBuffer.reserve(4096);
+	std::vector<unsigned char> tempReadBuffer;
+	tempReadBuffer.reserve(4096);
+#ifdef _WIN32
+	m_comPort.setReadTimeouts(100, 0);  // match linux
+#endif
+	std::thread* backgroundReader = new std::thread([this, &readBuffer, &safetyLock]() {
+#ifdef _WIN32
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+#endif
+		unsigned char buffer[1024];  // the LINUX serial buffer is only 512 bytes anyway
+		while (m_isStreaming) {
+			uint32_t waiting = m_comPort.justRead(buffer, 1024);
+			if (waiting>0) {
+				safetyLock.lock();				
+				readBuffer.insert(readBuffer.end(), buffer, buffer+waiting);
+				safetyLock.unlock();
+			} else
+				std::this_thread::sleep_for(std::chrono::microseconds(200));
+		}
+	});
 
-	unsigned int totalBitCells = rotations[0].bitcells;
-	// We dont need that much data
-	if (totalBitCells > 20000) totalBitCells = 20000;
 
-	if (!readSCPRam(0, totalBitCells * 2)) {
-		if (!alreadySpun) enableMotor(false, false);
-		return false;
-	}
-	if (!alreadySpun) enableMotor(false, false);
+#else
+	applyCommTimeouts(true);
+	unsigned char tempReadBuffer[2048] = { 0 };
+#endif
 
+	m_isStreaming = true;
+	m_abortStreaming = false;
+	m_abortSignalled = false;
+
+	// Number of times we failed to read anything
+	int readFail = 0;
+
+	// Sliding window for abort
+	unsigned char slidingWindow[4] = { 0,0,0,0 };
+	bool timeout = false;
+	bool dataState = false;
+	bool isFirstByte = true;
+	unsigned char mfmSequences = 0;
+	int hitIndex = 0;
+	uint32_t tickInNS = 0;
 
 	unsigned int nsCounting = 0;
 	unsigned int hdBits = 0;
 	unsigned int ddBits = 0;
 
-	// Look at the data
-	for (unsigned int bit = 0; bit < totalBitCells; bit++) {
+	for (;;) {
 
-		// Work out the actual time this tick took in nanoSeconds.
-		unsigned int tickInNS = ((unsigned int)htons(m_dataBuffer[bit])) * 25;
+		// More efficient to read several bytes in one go		
+#ifdef USE_THREADDED_READER_SCP
+		tempReadBuffer.resize(0); // should be just as fast as clear, but just in case
+		safetyLock.lock();
+		std::swap(tempReadBuffer, readBuffer);
+		safetyLock.unlock();
 
-		if (tickInNS == 0) {
-			nsCounting += 0x10000;
-			continue;
+		unsigned int bytesRead = tempReadBuffer.size();
+
+		if (bytesRead < 1) std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		for (const unsigned char byteRead : tempReadBuffer) {
+#else
+		unsigned int bytesAvailable = m_comPort.getBytesWaiting();
+		if (bytesAvailable < 1) bytesAvailable = 1;
+		if (bytesAvailable > sizeof(tempReadBuffer)) bytesAvailable = sizeof(tempReadBuffer);
+		unsigned int bytesRead = m_comPort.read(tempReadBuffer, m_abortSignalled ? 1 : bytesAvailable);
+		for (size_t a = 0; a < bytesRead; a++) {
+			const unsigned char byteRead = tempReadBuffer[a];
+#endif
+			if (m_abortSignalled) {
+				for (int s = 0; s < 3; s++) slidingWindow[s] = slidingWindow[s + 1];
+				slidingWindow[3] = byteRead;
+
+				// Watch the sliding window for the pattern we need
+				if ((slidingWindow[0] == 0xDE) && (slidingWindow[1] == 0xAD) && (slidingWindow[2] == (unsigned char)SCPCommand::DoCMD_STOPSTREAM)) {
+					m_isStreaming = false;
+					m_comPort.purgeBuffers();
+
+					applyCommTimeouts(false);
+					if (!alreadySpun) enableMotor(false, false);
+
+					isHD = (hdBits > ddBits);
+#ifdef USE_THREADDED_READER_SCP
+					if (backgroundReader) {
+						if (backgroundReader->joinable()) backgroundReader->join();
+						delete backgroundReader;
+					}
+#endif
+					if (timeout) return false;
+					if (slidingWindow[3] == (unsigned char)SCPResponse::pr_Overrun) return false;
+					return true;
+				}
+			}
+			else {
+
+				switch (byteRead) {
+				case 0xFF:
+					hitIndex = 1; break;
+				case 0x00:
+					if (hitIndex == 1) hitIndex = 2; else tickInNS += m_isHDMode ? (256 * 100) : (256 * 50);
+				default:
+					tickInNS += byteRead * 50;
+					// Enough bit-cells?
+					if (tickInNS > BITCELL_SIZE_IN_NS) {
+						if (tickInNS < 3000) hdBits++;
+						if ((tickInNS > 4500) && (tickInNS < 8000)) ddBits++;
+
+						if ((hdBits + ddBits > 10000) && (!m_abortStreaming)) 
+							abortReadStreaming();
+						tickInNS = 0;
+						hitIndex = 0;
+					}
+				}
+			}
 		}
-
-		// Enough bit-cells?
-		if (tickInNS + nsCounting > BITCELL_SIZE_IN_NS) {
-			tickInNS += nsCounting;
-			nsCounting = 0;
-			if (tickInNS < 3000) hdBits++;
-			if ((tickInNS > 4500) && (tickInNS < 8000)) ddBits++;
+		if (bytesRead < 1) {
+			readFail++;
+			if (readFail > 20) {
+				if (!m_abortStreaming) {
+					abortReadStreaming();
+					readFail = 0;
+					m_diskInDrive = false;
+				}
+				else {
+					isHD = (hdBits > ddBits);
+					applyCommTimeouts(false);
+					if (!alreadySpun) enableMotor(false, false);
+					m_isStreaming = false;
+#ifdef USE_THREADDED_READER_SCP
+					if (backgroundReader) {
+						if (backgroundReader->joinable()) backgroundReader->join();
+						delete backgroundReader;
+					}
+#endif
+					return false;
+				}
+			}
+			else {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+		else {
+			readFail = 0;
 		}
 	}
-
-	// Probably no disk
-	if (hdBits + ddBits < 100) {
-		m_diskInDrive = false;
-		return false;
-	}
-		
-	isHD = (hdBits > ddBits);
-
-	return true;
 }
 
-
 // Reads a complete rotation of the disk, and returns it using the callback function which can return FALSE to stop
-// An instance of RotationExtractor is required.  This is purely to save on re-allocations.  It is internally reset each time
-SCPErr SCPInterface::readRotation(RotationExtractor& extractor, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
+// An instance of PLL is required which contains a rotation extractor.  This is purely to save on re-allocations.  It is internally reset each time
+SCPErr SCPInterface::readRotation(PLL::BridgePLL& pll, const unsigned int maxOutputSize, RotationExtractor::MFMSample* firstOutputBuffer, RotationExtractor::IndexSequenceMarker& startBitPatterns,
 	std::function<bool(RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits)> onRotation) {
 	SCPResponse response;
 
-	m_shouldAbortReading = false;
+	pll.prepareExtractor(m_isHDMode, startBitPatterns);
 
 	// Issue a read-request
 	selectDrive(true);
-	unsigned int numRotations = 4;// startBitPatterns.valid ? 2 : 1;  // TODO: remove BIT_READ_FROM_INDEX if valid
-	unsigned char payload[] = { (unsigned char)numRotations, BIT_READ_FROM_INDEX | BIT_READ_BITCELL_SIZE_16};
 
-	bool ret = sendCommand(SCPCommand::DoCMD_READFLUX, payload, 2, response);
-	if (!m_motorIsEnabled) selectDrive(false);
+	// Request real-time flux stream, 8-bit resolution, and 50ns timings.
+	const unsigned char payload[1] = { STREAMFLAGS_RESOLUTION_50NS | FLAGS_BITSIZE_8BIT | STREAMFLAGS_IMMEDIATEREAD | STREAMFLAGS_RAWFLUX };
+	bool ret = sendCommand(SCPCommand::DoCMD_STARTSTREAM, payload, 1, response);
 	if (!ret) {
+		if (!m_motorIsEnabled) selectDrive(false);
 		if ((response == SCPResponse::pr_NotReady) || (response == SCPResponse::pr_NoDisk)) {
 			m_diskInDrive = false;
 			return SCPErr::scpNoDiskInDrive;
@@ -669,132 +722,193 @@ SCPErr SCPInterface::readRotation(RotationExtractor& extractor, const unsigned i
 		return SCPErr::scpUnknownError;
 	}
 	
-	// Fetch what happened
-	ret = sendCommand(SCPCommand::DoCMD_GETFLUXINFO, response);
-	if (!ret) {
-		if ((response == SCPResponse::pr_NotReady) || (response == SCPResponse::pr_NoDisk)) {
-			m_diskInDrive = false;
-			return SCPErr::scpNoDiskInDrive;
+
+#ifdef USE_THREADDED_READER_SCP
+	std::mutex safetyLock;
+	// I was using a deque, but its much faster to just keep switching between two vectors
+	std::vector<unsigned char> readBuffer;
+	readBuffer.reserve(4096);
+	std::vector<unsigned char> tempReadBuffer;
+	tempReadBuffer.reserve(4096);
+#ifdef _WIN32
+	m_comPort.setReadTimeouts(100, 0);  // match linux
+#endif
+	std::thread* backgroundReader = new std::thread([this, &readBuffer, &safetyLock]() {
+#ifdef _WIN32
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+#else
+		struct sched_param sch;
+		int policy;
+		if (pthread_getschedparam(pthread_self(), &policy, &sch) == 0) {
+			policy = SCHED_FIFO;
+			sch.sched_priority = sched_get_priority_max(policy); // boost priority
+			pthread_setschedparam(pthread_self(), policy, &sch);
 		}
-		return SCPErr::scpUnknownError;
-	}
+#endif
+		unsigned char buffer[1024];  // the LINUX serial buffer is only 512 bytes anyway
+		while (m_isStreaming) {
+			uint32_t waiting = m_comPort.justRead(buffer, 1024);
+			if (waiting > 0) {
+				safetyLock.lock();
+				readBuffer.insert(readBuffer.end(), buffer, buffer + waiting);
+				safetyLock.unlock();
+}
+			else
+				std::this_thread::sleep_for(std::chrono::microseconds(200));
+		}
+	});
 
-	// The function receives data for the potential full 5
-	ReadResponseRotation rotations[5];
-	if (m_comPort.read(rotations, sizeof(rotations))!=sizeof(rotations)) return SCPErr::scpUnknownError;
-	for (int a = 0; a < 5; a++) {
-		rotations[a].indexTime = htonl(rotations[a].indexTime);
-		rotations[a].bitcells = htonl(rotations[a].bitcells);
-	}
 
-	// Stop! probably no disk in the drive
-	if (rotations[0].bitcells < 10) {
-		m_diskInDrive = false;
-		return SCPErr::scpNoDiskInDrive;
-	}
+#else
+	applyCommTimeouts(true);
+	unsigned char tempReadBuffer[2048] = { 0 };
+#endif
 
-	// Reset ready for extraction
-	extractor.reset(false);
-
-	// Remind it if the 'index' data we want to sync to
-	extractor.setIndexSequence(startBitPatterns);
+	m_isStreaming = true;
+	m_abortStreaming = false;
+	m_abortSignalled = false;
 	
-	unsigned int offset = 0;
-	unsigned int nsCounting = 0;
-	unsigned int numRot = numRotations;
-	if (numRot < 2) numRot = 2;
+	// Number of times we failed to read anything
+	int readFail = 0;
 
-	// Now read and process the data
-	for (unsigned int currentRotation = 0; currentRotation < numRot; currentRotation++) {
+	pll.prepareExtractor(m_isHDMode, startBitPatterns);
 
-		// Just allow the first rotation to be fed back in
-		unsigned int actualRotation = currentRotation % numRotations;
-		if (currentRotation < numRotations) {
-			if (!readSCPRam(offset, rotations[currentRotation].bitcells * 2)) return SCPErr::scpUnknownError;
-			offset += rotations[currentRotation].bitcells * 2;
-		}
+	// Sliding window for abort
+	unsigned char slidingWindow[4] = { 0,0,0,0 };
+	bool timeout = false;
+	bool dataState = false;
+	bool isFirstByte = true;
+	unsigned char mfmSequences = 0;
+	int hitIndex = 0;
+	uint32_t tickInNS = 0;
 
-		bool isIndex = true;
+	for (;;) {
 
-		for (unsigned int bit = 0; bit < rotations[actualRotation].bitcells; bit++) {
+		// More efficient to read several bytes in one go	
+#ifdef USE_THREADDED_READER_SCP
+		tempReadBuffer.resize(0); // should be just as fast as clear, but just in case
+		safetyLock.lock();
+		std::swap(tempReadBuffer, readBuffer);
+		safetyLock.unlock();
 
-			// Work out the actual time this tick took in nanoSeconds.
-			unsigned int tickInNS = ((unsigned int)htons(m_dataBuffer[bit])) * 25;
-			if (m_isHDMode) tickInNS *= 2;
+		unsigned int bytesRead = tempReadBuffer.size();
 
-			if (tickInNS == 0) {
-				nsCounting += 0x10000;
-				continue;
-			}
+		if (bytesRead < 1) std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		for (const unsigned char byteRead : tempReadBuffer) {
+#else
+		unsigned int bytesAvailable = m_comPort.getBytesWaiting();
+		if (bytesAvailable < 1) bytesAvailable = 1;
+		if (bytesAvailable > sizeof(tempReadBuffer)) bytesAvailable = sizeof(tempReadBuffer);
+		unsigned int bytesRead = m_comPort.read(tempReadBuffer, m_abortSignalled ? 1 : bytesAvailable);
+		for (size_t a = 0; a < bytesRead; a++) {
+			const unsigned char byteRead = tempReadBuffer[a];
+#endif
+			if (m_abortSignalled) {
+				for (int s = 0; s < 3; s++) slidingWindow[s] = slidingWindow[s + 1];
+				slidingWindow[3] = byteRead;
 
-			// Enough bit-cells?
-			if (tickInNS + nsCounting > BITCELL_SIZE_IN_NS) {
-				tickInNS += nsCounting;
-
-				nsCounting = 0;
-
-				const int onePointFiveBitCells = BITCELL_SIZE_IN_NS + (BITCELL_SIZE_IN_NS / 2);
-				int sequence = tickInNS >= onePointFiveBitCells ? (tickInNS - onePointFiveBitCells) / BITCELL_SIZE_IN_NS : 0;
-				// This shouldnt ever happen
-				if (sequence < 0) sequence = 0;
-
-				// Rare condition
-				if (sequence >= 3) {
-					// Account for the ending 01
-					tickInNS -= BITCELL_SIZE_IN_NS * 2;
-					sequence -= 2;
-
-					// Based on the rules we can't output a sequence this big and times must be accurate so we output as many 0000's as possible
-					while (sequence > 0) {
-						RotationExtractor::MFMSequenceInfo sample;
-						sample.mfm = RotationExtractor::MFMSequence::mfm0000;
-						unsigned int thisTicks = tickInNS;
-						if (thisTicks > BITCELL_SIZE_IN_NS * 4) thisTicks = BITCELL_SIZE_IN_NS * 4;
-						sample.timeNS = thisTicks;
-						tickInNS -= sample.timeNS;
-						extractor.submitSequence(sample, isIndex, false);
-						isIndex = false;
-						sequence -= 4;
+				// Watch the sliding window for the pattern we need
+				if ((slidingWindow[0] == 0xDE) && (slidingWindow[1] == 0xAD) && (slidingWindow[2] == (unsigned char)SCPCommand::DoCMD_STOPSTREAM)) {
+					m_isStreaming = false;
+#ifdef USE_THREADDED_READER_SCP
+					if (backgroundReader) {
+						if (backgroundReader->joinable()) backgroundReader->join();
+						delete backgroundReader;
 					}
+#endif
+					m_comPort.purgeBuffers();
+					applyCommTimeouts(false);
+					if (!m_diskInDrive) return SCPErr::scpNoDiskInDrive;
+					if (timeout) return SCPErr::scpUnknownError;
+					if (slidingWindow[3] == (unsigned char)SCPResponse::pr_Overrun) return SCPErr::scpOverrun;
+					return SCPErr::scpOK;
+				}
+			}
+			else {
+				switch (byteRead) {
+				case 0xFF:
+					hitIndex = 1; 
+					break;
+				case 0x00: 
+					if (hitIndex == 1) hitIndex = 2; else {
+						tickInNS += m_isHDMode ? (256 * 100) : (256 * 50);
+						hitIndex = 0;
+					}
+					break;
+				default:
+					pll.submitFlux(tickInNS + (m_isHDMode ? (byteRead * 100UL) : (byteRead * 50UL)), hitIndex == 2);
+					tickInNS = 0;
+					hitIndex = 0;
+					break;
+				}
 
-					// And follow it up with an 01
-					RotationExtractor::MFMSequenceInfo sample;
-					sample.mfm = RotationExtractor::MFMSequence::mfm01;
-					sample.timeNS = BITCELL_SIZE_IN_NS * 2;
-					extractor.submitSequence(sample, isIndex, false);
-					isIndex = false;
+				// Is it ready to extract?
+				if (pll.canExtract()) {
+					unsigned int bits = 0;
+					// Go!
+					if (pll.extractRotation(firstOutputBuffer, bits, maxOutputSize, true)) {
+						m_diskInDrive = true;
+
+						if (!onRotation(&firstOutputBuffer, bits)) {
+							// And if the callback says so we stop.
+							abortReadStreaming();
+						}
+						// Always save this back
+						pll.getIndexSequence(startBitPatterns);
+					}
 				}
 				else {
-					RotationExtractor::MFMSequenceInfo sample;
-					sample.mfm = (RotationExtractor::MFMSequence)sequence;
-					sample.timeNS = tickInNS;
-
-					extractor.submitSequence(sample, isIndex, false);
-					isIndex = false;
-				}
-			}
-
-			if (extractor.canExtract()) {
-				unsigned int bits = 0;
-				if (extractor.extractRotation(firstOutputBuffer, bits, maxOutputSize)) {
-					if (!onRotation(&firstOutputBuffer, bits)) {
-						// And if the callback says so we stop. - unsupported at present
+					if (pll.totalTimeReceived() > (m_isHDMode ? 1200000000U : 600000000U)) {
+						// No data, stop
 						abortReadStreaming();
+						timeout = true;
 					}
-					// Always save this back
-					extractor.getIndexSequence(startBitPatterns);
 				}
 			}
 		}
-		
-		if (m_shouldAbortReading) break;
+		if (bytesRead < 1) {
+			readFail++;
+			if (readFail > 30) {
+				if (!m_abortStreaming) {
+					abortReadStreaming();
+					readFail = 0;
+					m_diskInDrive = false;
+				}
+				else {
+					m_isStreaming = false;
+#ifdef USE_THREADDED_READER_SCP
+					if (backgroundReader) {
+						if (backgroundReader->joinable()) backgroundReader->join();
+						delete backgroundReader;
+					}
+#endif
+					applyCommTimeouts(false);
+					return SCPErr::scpUnknownError;
+				}
+			}
+			else {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+		else {
+			readFail = 0;
+		}
 	}
-	
-	return SCPErr::scpOK;
 }
 
-// Attempt to abort reading
-void SCPInterface::abortReadStreaming() {
-	m_shouldAbortReading = true;
+
+// Stops the read streaming immediately and any data in the buffer will be discarded.
+bool SCPInterface::abortReadStreaming() {
+	// Prevent two things doing this at once, and thus ending with two bytes being written
+	std::lock_guard<std::mutex> lock(m_protectAbort);
+	if (!m_isStreaming) return true;
+
+	if (!m_abortStreaming) {
+		SCPResponse response;
+		m_abortSignalled = true;
+		if (!sendCommand(SCPCommand::DoCMD_STOPSTREAM, NULL, 0, response, false))  return false;
+	}
+	m_abortStreaming = true;
+	return true;
 }
 

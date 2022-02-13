@@ -18,17 +18,18 @@
 #include "floppybridge_abstract.h"
 #include "CommonBridgeTemplate.h"
 #include "SuperCardProInterface.h"
+#include "pll.h"
 
 
 class SupercardProDiskBridge : public CommonBridgeTemplate {
 private:
+	// When the motor last switched on	
+	std::chrono::time_point<std::chrono::steady_clock> m_motorTurnOnTime;
+	bool m_motorIsEnabled = false;
 
 	// Which com port should we use? or blank for automatic
 	std::string m_comPort;
-
-	// IS motor running?
-	bool m_motorIsEnabled = false;
-
+	
 	// Which drive to use
 	bool m_useDriveA = false;
 
@@ -87,18 +88,18 @@ protected:
 	virtual bool setCurrentCylinder(const unsigned int cylinder) override;
 
 	// If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
-	// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+	// Should perform the same operations as setCurrentCylinder in terms of disk change etc but without changing the current cylinder
 	// Return FALSE if this is not supported by the bridge
 	virtual bool performNoClickSeek() override;
 
 	// Called when data should be read from the drive.
-	//		rotationExtractor: supplied if you use it
+	//		pll:		   supplied if you use it
 	//		maxBufferSize: Maximum number of RotationExtractor::MFMSample in the buffer.  If we're trying to detect a disk, this might be set VERY LOW
 	// 	    buffer:		   Where to save to.  When a buffer is saved, position 0 MUST be where the INDEX pulse is.  RevolutionExtractor will do this for you
 	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistent where the INDEX position is read back at
 	//		onRotation: A function you should call for each complete revolution received.  If the function returns FALSE then you should abort reading, else keep sending revolutions
 	// Returns: ReadResponse, explains its self
-	virtual ReadResponse readData(RotationExtractor& rotationExtractor, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
+	virtual ReadResponse readData(PLL::BridgePLL& pll, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
 		std::function<bool(RotationExtractor::MFMSample* mfmData, const unsigned int dataLengthInBits)> onRotation) override;
 
 	// Called when a cylinder revolution should be written to the disk.

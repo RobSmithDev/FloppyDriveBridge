@@ -216,6 +216,10 @@ INT_PTR BridgeProfileEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam
 			if (HIWORD(wParam) == CBN_SELCHANGE) onDriverSelected();
 			return TRUE;
 
+		case IDC_MODE:
+			onDriverSelected();
+			return TRUE;
+
 		case IDC_PROFILENAME:
 			if (HIWORD(wParam) == EN_CHANGE) handleNameChange();
 			break;

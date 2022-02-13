@@ -1,6 +1,6 @@
 /* DrawBridge (Arduino Reader/Writer) Bridge for *UAE
 *
-* Copyright (C) 2021 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2022 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This library is free software; you can redistribute it and/or
@@ -85,7 +85,7 @@ bool ArduinoFloppyDiskBridge::supportsDiskChange() {
 
 // Called when the class is about to shut down
 void ArduinoFloppyDiskBridge::closeInterface() {
-	// Turn everythign off
+	// Turn everything off
 	m_io.enableReading(false);
 	m_io.closePort();
 }
@@ -169,6 +169,7 @@ bool ArduinoFloppyDiskBridge::openInterface(std::string& errorMessage) {
 // Called when a disk is inserted so that you can (re)populate the response to _getDriveTypeID()
 void ArduinoFloppyDiskBridge::checkDiskType() {
 	bool capacity;
+
 	if (m_io.checkDiskCapacity(capacity) == ArduinoFloppyReader::DiagnosticResponse::drOK) {
 		m_isHDDisk = capacity;
 		m_io.setDiskCapacity(m_isHDDisk);
@@ -196,7 +197,7 @@ const FloppyDiskBridge::BridgeDriver* ArduinoFloppyDiskBridge::_getDriverInfo() 
 
 // Duplicate of the one below, but here for consistency - Returns the name of interface.  This pointer should remain valid after the class is destroyed
 const FloppyDiskBridge::DriveTypeID ArduinoFloppyDiskBridge::_getDriveTypeID() {
-	return m_isHDDisk ? FloppyDiskBridge::DriveTypeID::dti35HD : FloppyDiskBridge::DriveTypeID::dti35DD;
+	return m_isHDDisk ? DriveTypeID::dti35HD : DriveTypeID::dti35DD;
 }
 
 // Called to switch which head is being used right now.  Returns success or not
@@ -222,7 +223,7 @@ bool ArduinoFloppyDiskBridge::getDiskChangeStatus(const bool forceCheck) {
 }
 
 // If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
-// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+// Should perform the same operations as setCurrentCylinder in terms of disk change etc but without changing the current cylinder
 // Return FALSE if this is not supported by the bridge
 bool ArduinoFloppyDiskBridge::performNoClickSeek() {
 	// Claim we did it anyway
@@ -239,9 +240,9 @@ bool ArduinoFloppyDiskBridge::performNoClickSeek() {
 // Trigger a seek to the requested cylinder, this can block until complete
 bool ArduinoFloppyDiskBridge::setCurrentCylinder(const unsigned int cylinder) {
 	// No need if its busy
-	bool ignoreDiskCheck = (isMotorRunning()) && (!isReady());
+	bool ignoreDiskCheck = isMotorRunning() && !isReady();
 
-	// If we don't support diskchange then dont allow the hardware to check for a disk as it takes time, unless it's due anyway
+	// If we don't support disk change then don't allow the hardware to check for a disk as it takes time, unless it's due anyway
 	if (!m_io.getFirwareVersion().fullControlMod) ignoreDiskCheck |= !isReadyForManualDiskCheck();
 
 	// Go! - and don't ask
@@ -260,37 +261,20 @@ bool ArduinoFloppyDiskBridge::setCurrentCylinder(const unsigned int cylinder) {
 }
 
 // Called when data should be read from the drive.
-//		rotationExtractor: supplied if you use it
+//		pll:           supplied if you use it
 //		maxBufferSize: Maximum number of RotationExtractor::MFMSample in the buffer.  If we're trying to detect a disk, this might be set VERY LOW
 // 	    buffer:		   Where to save to.  When a buffer is saved, position 0 MUST be where the INDEX pulse is.  RevolutionExtractor will do this for you
 //		indexMarker:   Used by rotationExtractor if you use it, to help be consistent where the INDEX position is read back at
 //		onRotation: A function you should call for each complete revolution received.  If the function returns FALSE then you should abort reading, else keep sending revolutions
 // Returns: ReadResponse, explains its self
-CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readData(RotationExtractor& rotationExtractor, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
+CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readData(PLL::BridgePLL& pll, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
 	std::function<bool(RotationExtractor::MFMSample* mfmData, const unsigned int dataLengthInBits)> onRotation) {
 	
-	ArduinoFloppyReader::DiagnosticResponse result = m_io.readRotation(rotationExtractor, maxBufferSize, buffer, indexMarker,
+	ArduinoFloppyReader::DiagnosticResponse result = m_io.readRotation(*pll.rotationExtractor(), maxBufferSize, buffer, indexMarker,
 		[&onRotation](RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits) -> bool {
 			return onRotation(*mfmData, dataLengthInBits);
-		});
-
-	// Retry
-	if (result == ArduinoFloppyReader::DiagnosticResponse::drError) {
-		result = m_io.readRotation(rotationExtractor, maxBufferSize, buffer, indexMarker,
-			[&onRotation](RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits) -> bool {
-				return onRotation(*mfmData, dataLengthInBits);
-			});
-	}
-
-	// Retry
-	if (result == ArduinoFloppyReader::DiagnosticResponse::drError) {
-		result = m_io.readRotation(rotationExtractor, maxBufferSize, buffer, indexMarker,
-			[&onRotation](RotationExtractor::MFMSample** mfmData, const unsigned int dataLengthInBits) -> bool {
-				return onRotation(*mfmData, dataLengthInBits);
-			});
-		if (result == ArduinoFloppyReader::DiagnosticResponse::drError) result = ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive;
-	}
-
+		}, true);
+		
 	switch (result) {
 		case ArduinoFloppyReader::DiagnosticResponse::drOK: return ReadResponse::rrOK;
 		case ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive: return ReadResponse::rrNoDiskInDrive;

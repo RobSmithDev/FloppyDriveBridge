@@ -2,7 +2,7 @@
 #define FLOPPY_BRIDGE_CONFIG_H
 /* floppybridge_config
 *
-* Copyright 2021 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2022 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This library defines which interfaces are enabled within *UAE

@@ -1,6 +1,6 @@
 /* FloppyBridge DLL for *UAE
 *
-* Copyright (C) 2021 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2022 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This library is free software; you can redistribute it and/or
@@ -53,7 +53,8 @@ HINSTANCE hInstance;
 
 
 
-static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021 Robert Smith (@RobSmithDev)", "https://amiga.robsmithdev.co.uk/winuae", 0, 10, 1, 0, 0};
+static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021-2022 RobSmithDev", "https://amiga.robsmithdev.co.uk/winuae", 1, 0, 0, 0, 0};
+static BridgeAbout BridgeInformationUpdate = { "FloppyBridge UPDATE AVAILABLE, Copyright(C) 2021-2022 RobSmithDev", "https://amiga.robsmithdev.co.uk/winuae", 1, 0, 0, 0, 0 };
 static bool hasUpdateChecked = false;
 std::vector<SerialIO::SerialPortInformation> serialports;
 #ifdef _WIN32
@@ -140,6 +141,9 @@ void BridgeConfig::toString(char** serialisedOptions) {
 
 // Returns a pointer to information about the project
 void handleAbout(bool checkForUpdates, BridgeAbout** output) {
+#ifdef _WIN32
+    checkForUpdates |= BridgeProfileListEditor::shouldAutoCheckForUpdates();
+#endif
     if ((checkForUpdates) && (!hasUpdateChecked)) {
         hasUpdateChecked = true;
 
@@ -157,18 +161,29 @@ void handleAbout(bool checkForUpdates, BridgeAbout** output) {
 #ifdef _WIN32
                 BridgeInformation.updateMajorVersion = add.S_un.S_un_b.s_b1;
                 BridgeInformation.updateMinorVersion = add.S_un.S_un_b.s_b2;
+                BridgeInformationUpdate.updateMajorVersion = add.S_un.S_un_b.s_b1;
+                BridgeInformationUpdate.updateMinorVersion = add.S_un.S_un_b.s_b2;
 #else
                 uint32_t bytes = htonl(add.s_addr);
                 BridgeInformation.updateMajorVersion = bytes >> 24;
                 BridgeInformation.updateMinorVersion = (bytes >> 16) & 0xFF;
+                BridgeInformationUpdate.updateMajorVersion = bytes >> 24;
+                BridgeInformationUpdate.updateMinorVersion = (bytes >> 16) & 0xFF;
 #endif  
                 BridgeInformation.isUpdateAvailable = ((BridgeInformation.majorVersion < BridgeInformation.updateMajorVersion) ||
                     ((BridgeInformation.majorVersion == BridgeInformation.updateMajorVersion) && (BridgeInformation.minorVersion < BridgeInformation.updateMinorVersion))) ? 1 : 0;
+              
+                BridgeInformationUpdate.isUpdateAvailable = BridgeInformation.isUpdateAvailable;;
             }
         }
     }
+#ifdef _WIN32
+    if (output) 
+        if (BridgeInformationUpdate.isUpdateAvailable) *output = (BridgeAbout*)&BridgeInformationUpdate; else *output = (BridgeAbout*)&BridgeInformation;
 
+#else
     if (output) *output = (BridgeAbout*)&BridgeInformation;
+#endif 
 }
 
 // Get driver information

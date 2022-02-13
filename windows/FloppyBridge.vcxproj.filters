@@ -66,6 +66,9 @@
     <ClInclude Include="bridgeProfileListEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\floppybridge\pll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FloppyBridge.cpp">
@@ -105,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="bridgeProfileListEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\floppybridge\pll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

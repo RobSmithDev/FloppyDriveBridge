@@ -2,7 +2,7 @@
 #define ARDUINO_FLOPPY_BRIDGE
 /* DrawBridge (Arduino Reader/Writer) Bridge for *UAE
 *
-* Copyright (C) 2021 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2022 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 #include "floppybridge_abstract.h"
 #include "CommonBridgeTemplate.h"
 #include "ArduinoInterface.h"
-
+#include "pll.h"
 
 class ArduinoFloppyDiskBridge : public CommonBridgeTemplate {
 private:
@@ -96,18 +96,18 @@ protected:
 	virtual bool setCurrentCylinder(const unsigned int cylinder) override;
 
 	// If we're on track 0, this is the emulator trying to seek to track -1.  We catch this as a special case.  
-	// Should perform the same operations as setCurrentCylinder in terms of diskchange etc but without changing the current cylinder
+	// Should perform the same operations as setCurrentCylinder in terms of disk change etc but without changing the current cylinder
 	// Return FALSE if this is not supported by the bridge
 	virtual bool performNoClickSeek() override;
 
 	// Called when data should be read from the drive.
-	//		rotationExtractor: supplied if you use it
+	//		pll:           supplied if you use it
 	//		maxBufferSize: Maximum number of RotationExtractor::MFMSample in the buffer.  If we're trying to detect a disk, this might be set VERY LOW
 	// 	    buffer:		   Where to save to.  When a buffer is saved, position 0 MUST be where the INDEX pulse is.  RevolutionExtractor will do this for you
 	//		indexMarker:   Used by rotationExtractor if you use it, to help be consistent where the INDEX position is read back at
 	//		onRotation: A function you should call for each complete revolution received.  If the function returns FALSE then you should abort reading, else keep sending revolutions
 	// Returns: ReadResponse, explains its self
-	virtual ReadResponse readData(RotationExtractor& rotationExtractor, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
+	virtual ReadResponse readData(PLL::BridgePLL& pll, const unsigned int maxBufferSize, RotationExtractor::MFMSample* buffer, RotationExtractor::IndexSequenceMarker& indexMarker,
 		std::function<bool(RotationExtractor::MFMSample* mfmData, const unsigned int dataLengthInBits)> onRotation) override;
 
 	// Called when a cylinder revolution should be written to the disk.
@@ -115,7 +115,7 @@ protected:
 	//					numBytes						Number of bits in the buffer to write
 	//					writeFromIndex					If an attempt should be made to write this from the INDEX pulse rather than just a random position
 	//					suggestUsingPrecompensation		A suggestion that you might want to use write precompensation, optional
-	// Returns TRUE if success, or false if it fails.  Largely doesnt matter as most stuff should verify with a read straight after
+	// Returns TRUE if success, or false if it fails.  Largely doesn't matter as most stuff should verify with a read straight after
 	virtual bool writeData(const unsigned char* rawMFMData, const unsigned int numBits, const bool writeFromIndex, const bool suggestUsingPrecompensation) override;
 
 	// A manual way to check for disk change.  This is simulated by issuing a read message and seeing if there's any data.  Returns TRUE if data or an INDEX pulse was detected
