@@ -53,8 +53,8 @@ HINSTANCE hInstance;
 
 
 
-static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021-2022 RobSmithDev", "https://amiga.robsmithdev.co.uk/winuae", 1, 0, 0, 0, 0};
-static BridgeAbout BridgeInformationUpdate = { "FloppyBridge UPDATE AVAILABLE, Copyright(C) 2021-2022 RobSmithDev", "https://amiga.robsmithdev.co.uk/winuae", 1, 0, 0, 0, 0 };
+static BridgeAbout BridgeInformation = { "FloppyBridge, Copyright(C) 2021-2022 RobSmithDev", "https://amiga.robsmithdev.co.uk/winuae", 1, 1, 0, 0, 0};
+static BridgeAbout BridgeInformationUpdate = { "FloppyBridge UPDATE AVAILABLE, Copyright(C) 2021-2022 RobSmithDev", "https://amiga.robsmithdev.co.uk/winuae", 1, 1, 0, 0, 0 };
 static bool hasUpdateChecked = false;
 std::vector<SerialIO::SerialPortInformation> serialports;
 #ifdef _WIN32
@@ -910,6 +910,7 @@ BOOL WINAPI DllMain(
         bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
         bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO1), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
         bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO2), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
+        bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
         break;
 
     case DLL_PROCESS_DETACH:

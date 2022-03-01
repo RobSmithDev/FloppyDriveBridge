@@ -20,6 +20,7 @@ The majority is covered by the GNU GPL3 with the exception of:
 	Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
+* End of Feb 2022: Greatly increased compatability due to changes in the PLL and Rotation Extractor handling.  Check the games that didnt boot before!
 * February 2022: Fixed random crash in Rotation Extractor
 			   Further stability improvements for Linux (or rather not-Windows)
 * Janurary 2022: Added support for Supercard Pro (V1.3 firmware required)
