@@ -391,7 +391,6 @@ void CommonBridgeTemplate::internalCheckDiskDensity(bool newDiskInserted) {
 	m_inHDMode = _getDriveTypeID() == DriveTypeID::dti35HD;
 }
 
-
 // Reset the previously setup queue
 void CommonBridgeTemplate::resetMFMCache() {
 	std::lock_guard lock(m_switchBufferLock);

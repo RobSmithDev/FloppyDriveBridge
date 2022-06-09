@@ -20,6 +20,10 @@ The majority is covered by the GNU GPL3 with the exception of:
 	Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
+* June 2022: Added support for track 82 and 83 reading
+			 Changed the behaviour to disk check to be no-click for manual detection
+			 Updated Greaseweazle driver to also support Shugart interfaces
+			 Some cosmetic fixes
 * End of Feb 2022: Greatly increased compatability due to changes in the PLL and Rotation Extractor handling.  Check the games that didnt boot before!
 * February 2022: Fixed random crash in Rotation Extractor
 			   Further stability improvements for Linux (or rather not-Windows)
@@ -38,10 +42,10 @@ The majority is covered by the GNU GPL3 with the exception of:
 
 # Supported Devices:
 ## DrawBridge aka Arduino Reader/Writer at https://amiga.robsmithdev.co.uk
-Requires a mod to the circuit to give access to the DISKCHANGE pin.  Requires firmware V1.8
+Requires a mod to the original (pre 2021) circuit to give access to the DISKCHANGE pin.  Requires firmware V1.8+
 
 ## Greeseweazle at https://github.com/keirf/Greaseweazle
-Requires firmware 0.27.  Only some boards support the DISKCHANGE pin.  The rest will be simulated by spinning up the disk several times.
+Requires firmware 0.27 or newer.  Only some boards support the DISKCHANGE pin.  The rest will be simulated by spinning up the disk several times.
 
 ## Supercard Pro at https://www.cbmstuff.com/
 Requires firmware V1.3
@@ -50,3 +54,6 @@ Requires firmware V1.3
 If you have another device you would like to contribute to this or have a suggestion or improvement let me know/make a pull request.
 
 RobSmithDev
+https://www.patreon.com/RobSmithDev
+https://amiga.robsmithdev.co.uk/winuae
+https://www.youtube.com/c/robsmithdev

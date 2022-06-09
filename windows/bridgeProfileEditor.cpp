@@ -179,7 +179,7 @@ void BridgeProfileEditor::saveToProfile() {
 
 	// Cable select
 	w = GetDlgItem(m_dialogBox, IDC_CABLE);
-	m_profile->driveCableIsB = SendMessage(w, CB_GETCURSEL, 0, 0) == 1;
+	m_profile->driveCable = (CommonBridgeTemplate::DriveSelection)SendMessage(w, CB_GETCURSEL, 0, 0);
 }
 
 // Dialog window message handler
@@ -190,7 +190,7 @@ INT_PTR BridgeProfileEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam
 		return TRUE;
 
 	case WM_SETCURSOR:
-		if ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL)) {
+		if (((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL2))) {
 			SetCursor(m_handPoint);
 			SetWindowLongPtr(m_dialogBox, DWLP_MSGRESULT, (LONG_PTR)TRUE);
 			return TRUE;
@@ -198,7 +198,7 @@ INT_PTR BridgeProfileEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam
 		break;
 
 	case WM_CTLCOLORSTATIC:
-		if ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL)) {
+		if (((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL2))) {
 			SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_3DFACE));
 			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
@@ -210,6 +210,10 @@ INT_PTR BridgeProfileEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wParam
 		switch (LOWORD(wParam)) {
 		case IDC_URL:
 			handleURLClicked();
+			return TRUE;
+
+		case IDC_URL2:
+			ShellExecuteA(m_dialogBox, "OPEN", "https://amiga.robsmithdev.co.uk", NULL, NULL, SW_SHOW);
 			return TRUE;
 
 		case IDC_DRIVER:
@@ -274,9 +278,30 @@ void BridgeProfileEditor::onDriverSelected() {
 		CommonBridgeTemplate::BridgeMode mode = (CommonBridgeTemplate::BridgeMode)SendMessage(w, CB_GETCURSEL, 0, 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_AUTOCACHE), (info->configOptions & CONFIG_OPTIONS_AUTOCACHE) != 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_SMART), ((info->configOptions & CONFIG_OPTIONS_SMARTSPEED) != 0) && ((mode == CommonBridgeTemplate::BridgeMode::bmFast) || (mode == CommonBridgeTemplate::BridgeMode::bmCompatible)));   // extra
-		EnableWindow(GetDlgItem(m_dialogBox, IDC_CABLE), (info->configOptions & CONFIG_OPTIONS_DRIVE_AB) != 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_AUTODETECT), (info->configOptions & CONFIG_OPTIONS_COMPORT_AUTODETECT) != 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_COMPORT), ((info->configOptions & CONFIG_OPTIONS_COMPORT) != 0) && (SendMessage(GetDlgItem(m_dialogBox, IDC_AUTODETECT), BM_GETCHECK, 0,0)== BST_UNCHECKED));
+
+
+		// Cable select
+		w = GetDlgItem(m_dialogBox, IDC_CABLE);
+
+		EnableWindow(w, (info->configOptions & (CONFIG_OPTIONS_DRIVE_AB | CONFIG_OPTIONS_DRIVE_123)) != 0);
+		int i = SendMessage(w, CB_GETCURSEL, 0, 0);
+
+		// Remove previous list
+		while (SendMessage(w, CB_GETCOUNT, 0, 0) > 0)
+			SendMessage(w, CB_DELETESTRING, 0, 0);
+
+		int pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"IBMPC Drive as A"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
+		pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"IBMPC Drive as B"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+
+		if (info->configOptions & CONFIG_OPTIONS_DRIVE_123) {
+			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 0"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 1"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 2"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 3"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+		}
+		SendMessage(w, CB_SETCURSEL, (WPARAM)i, 0);
 	}
 }
 
@@ -348,14 +373,12 @@ void BridgeProfileEditor::handleInitDialog(HWND hwnd) {
 	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"DD (always detect all disks as double density)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
 	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"HD (always detect all disks as high density)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 2);
 	SendMessage(w, CB_SETCURSEL, (WPARAM)m_profile->bridgeDensity, 0);
+	
+	onDriverSelected();
 
 	// Cable select
-	w = GetDlgItem(hwnd, IDC_CABLE);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Drive Connected as A"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
-	pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Drive Connected as B"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
-	SendMessage(w, CB_SETCURSEL, (WPARAM)m_profile->driveCableIsB?1:0, 0);
-
-	onDriverSelected();
+	w = GetDlgItem(m_dialogBox, IDC_CABLE);
+	SendMessage(w, CB_SETCURSEL, (WPARAM)m_profile->driveCable, 0);
 }
 
 
