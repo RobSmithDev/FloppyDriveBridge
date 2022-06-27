@@ -129,7 +129,7 @@
     <Image Include="bridge02.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="patreon.bmp">
+    <Image Include="donate.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

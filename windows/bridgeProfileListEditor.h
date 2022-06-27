@@ -16,7 +16,6 @@ private:
 	HCURSOR m_busyCursor, m_handPoint;
 	HWND m_dialogBox = 0;
 	HDC m_hdcTemp;
-	HBITMAP m_patreon;
 	HBRUSH m_hNormalBackground;
 	HBRUSH m_hSelectedBackground;
 	DWORD m_hNormalBackgroundColor, m_hSelectedBackgroundColor;

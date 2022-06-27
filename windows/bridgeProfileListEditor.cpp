@@ -95,7 +95,7 @@ void BridgeProfileListEditor::handleURLClicked(bool isPatreon) {
 
 	SetCursor(m_busyCursor);
 	handleAbout(false, &about);
-	ShellExecuteA(m_dialogBox, "OPEN", isPatreon ? "https://www.patreon.com/RobSmithDev" : about->url, NULL, NULL, SW_SHOW);
+	ShellExecuteA(m_dialogBox, "OPEN", isPatreon ? "https://paypal.me/RobSmithDev" : about->url, NULL, NULL, SW_SHOW);
 }
 
 void BridgeProfileListEditor::handleProfileListMessages(WPARAM wParam, LPARAM lParam) {
@@ -201,7 +201,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			return TRUE;
 
 		case WM_SETCURSOR: 
-			if (((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_PATREON)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_UPDATENOW))) {
+			if (((HWND)wParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_DONATE)) || ((HWND)wParam == GetDlgItem(m_dialogBox, IDC_UPDATENOW))) {
 				SetCursor(m_handPoint);
 				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG)TRUE);
 				return TRUE;
@@ -209,7 +209,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 			break;
 
 		case WM_CTLCOLORSTATIC: 
-			if (((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_PATREON)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_UPDATENOW))) {
+			if (((HWND)lParam == GetDlgItem(m_dialogBox, IDC_URL_MAIN)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_DONATE)) || ((HWND)lParam == GetDlgItem(m_dialogBox, IDC_UPDATENOW))) {
 				SetTextColor((HDC)wParam, GetSysColor(COLOR_HOTLIGHT));
 				SetBkColor((HDC)wParam, GetSysColor(COLOR_3DFACE));
 				SetWindowLongPtr(hwnd, DWLP_MSGRESULT, (LONG_PTR)GetSysColorBrush(COLOR_3DFACE));
@@ -244,7 +244,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 				setShouldCheckForUpdates(SendMessage(GetDlgItem(hwnd, IDC_AUTOCHECK), BM_GETCHECK, 0,0));
 				return TRUE;
 
-			case IDC_PATREON:
+			case IDC_DONATE:
 				handleURLClicked(true);
 				return TRUE;
 
@@ -349,21 +349,20 @@ void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 	 
 	EnableWindow(GetDlgItem(m_dialogBox, IDEDIT), FALSE);
 	EnableWindow(GetDlgItem(m_dialogBox, IDDELETE), FALSE);
-	SendMessage(GetDlgItem(m_dialogBox, IDC_PATREON), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)m_patreon);
 
 	// Auto-update check checkbox
 	w = GetDlgItem(hwnd, IDC_AUTOCHECK);
 	SendMessage(w, BM_SETCHECK, shouldAutoCheckForUpdates() ? BST_CHECKED : BST_UNCHECKED, 0);
 
 	if (shouldAutoCheckForUpdates()) {
-		BridgeAbout* about;
-
 		SetCursor(m_busyCursor);
 		handleAbout(true, &about);
 		if (about->isUpdateAvailable) {
 			char buffer[128];
-			sprintf_s(buffer, "Update V%i.%i Available", about->updateMajorVersion, about->updateMinorVersion);
-			SetWindowTextA(GetDlgItem(hwnd, IDC_UPDATENOW), buffer);;
+			sprintf_s(buffer, "V%i.%i Update Available", about->updateMajorVersion, about->updateMinorVersion);
+			SetWindowTextA(GetDlgItem(hwnd, IDC_UPDATENOW), buffer);
+			ShowWindow(GetDlgItem(hwnd, IDC_UPDATENOW), SW_SHOW);
+			ShowWindow(GetDlgItem(hwnd, IDC_CHECKUPDATES), SW_HIDE);
 		}		
 	}
 }
@@ -383,8 +382,6 @@ BridgeProfileListEditor::BridgeProfileListEditor(HINSTANCE hInstance, HWND hwndP
 
 	m_hNormalTextColor = GetSysColor(COLOR_WINDOWTEXT);
 	m_hSelectedTextColor = GetSysColor(COLOR_HIGHLIGHTTEXT);
-
-	m_patreon = (HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_PATREON), IMAGE_BITMAP, 0, 0, LR_LOADTRANSPARENT);
 }
 
 BridgeProfileListEditor::~BridgeProfileListEditor() {
@@ -393,7 +390,6 @@ BridgeProfileListEditor::~BridgeProfileListEditor() {
 	DestroyCursor(m_handPoint);
 	DeleteObject(m_hNormalBackground);
 	DeleteObject(m_hSelectedBackground);
-	DeleteObject(m_patreon);
 	if (m_boldFont) DeleteObject(m_boldFont);
 }
 

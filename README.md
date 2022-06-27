@@ -20,7 +20,11 @@ The majority is covered by the GNU GPL3 with the exception of:
 	Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
-* June 2022: Added support for track 82 and 83 reading
+* June 2022 (1.3): Fixed Greaseweazle Drive A/B not selectable properly
+				   Fixed issue with warning message about diskchange on Greaseweazle always re-appearing
+				   Fixed Greaseweazle Shugart support. (**Does not support disk change** - it will manually check for disks. A PC Drive is strongly recommended)
+				   Re-worked the profile listing dialog a little 
+* June 2022 (1.2): Added support for track 82 and 83 reading
 			 Changed the behaviour to disk check to be no-click for manual detection
 			 Updated Greaseweazle driver to also support Shugart interfaces
 			 Some cosmetic fixes
