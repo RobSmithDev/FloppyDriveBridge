@@ -25,6 +25,8 @@
 
 #ifdef AMIBERRY
 #include "FloppyBridge.h"
+#else
+#include "..\windows\FloppyBridge.h"
 #endif
 
 #define BRIDGE_STRING_MAX_LENGTH 255

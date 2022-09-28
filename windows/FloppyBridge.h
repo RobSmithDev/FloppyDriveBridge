@@ -128,7 +128,7 @@ struct BridgeOpened {
 
 
 
-
+/*
 extern "C" {
 	FLOPPYBRIDGE_API void CALLING_CONVENSION BRIDGE_About(bool checkForUpdates, BridgeAbout** output);
 	FLOPPYBRIDGE_API unsigned int CALLING_CONVENSION BRIDGE_NumDrivers(void);
@@ -198,3 +198,4 @@ extern "C" {
 	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_canTurboWrite(BridgeOpened* bridgeDriverHandle);
 	FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isReadyToWrite(BridgeOpened* bridgeDriverHandle);
 }
+*/

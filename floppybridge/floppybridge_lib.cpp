@@ -81,10 +81,10 @@ typedef bool 			 (CALLING_CONVENSION* _BRIDGE_GetConfigString)(BridgeDriverHandl
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_SetConfigFromString)(BridgeDriverHandle bridgeDriverHandle, char* config);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetAutoCache)(BridgeDriverHandle bridgeDriverHandle, bool* isAutoCacheMode);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetAutoCache)(BridgeDriverHandle bridgeDriverHandle, bool isAutoCacheMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridgeAPI::BridgeMode* bridgeMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridgeAPI::BridgeMode bridgeMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetDensityMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridgeAPI::BridgeDensityMode* densityMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetDensityMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridgeAPI::BridgeDensityMode densityMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeMode* bridgeMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeMode bridgeMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetDensityMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode* densityMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetDensityMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode densityMode);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetCurrentComPort)(BridgeDriverHandle bridgeDriverHandle, char** comPort);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetCurrentComPort)(BridgeDriverHandle bridgeDriverHandle, char* comPort);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetAutoDetectComPort)(BridgeDriverHandle bridgeDriverHandle, bool* autoDetectComPort);

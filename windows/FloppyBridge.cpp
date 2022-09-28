@@ -924,10 +924,12 @@ BOOL WINAPI DllMain(
     {
     case DLL_PROCESS_ATTACH:
         hInstance = hinstDLL;
-        bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
-        bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO1), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
-        bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO2), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
-        bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
+        if (bridgeLogos.size() < 1) {
+            bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
+            bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO1), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
+            bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO2), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
+            bridgeLogos.push_back((HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDB_BRIDGELOGO0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
+        }
         break;
 
     case DLL_PROCESS_DETACH:
