@@ -11,15 +11,20 @@ There is also a DLL version of this library for use with the official WinUAE bui
 Latest version includes several improvements and testing with the help of Dimitris Panokostas aka MiDWaN (Amiberry)
 
 # Licence
-The majority is covered by the GNU GPL3 with the exception of:
+The majority of the source code is available multi-licensed under the terms of the Mozilla Public License Version 2.0
+as published by Mozilla Corporation and the GNU General Public License, version 2 or later, as published by the Free
+Software Foundation, with the exception of:
 	floppybridge_lib.cpp
 	floppybridge_lib.h
 	floppybridge_abstract.h
 	floppybridge_config.h
-	
-	Which are separately licenced as UnLicence - see http://unlicense.org
+Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
+# April 2023 (1.4 still) Fixed issues with serial access on MacOS
+* March 2023 (1.4): Fixed issues with stalling mode not working properly, or not as expected
+                    Updated stalling mode to work better with diskspare device which seems to be very impatient!
+					Updated the icons for the supported hardware and rendered them transparently
 * June 2022 (1.3): Fixed Greaseweazle Drive A/B not selectable properly
 				   Fixed issue with warning message about diskchange on Greaseweazle always re-appearing
 				   Fixed Greaseweazle Shugart support. (**Does not support disk change** - it will manually check for disks. A PC Drive is strongly recommended)
@@ -50,6 +55,7 @@ Requires a mod to the original (pre 2021) circuit to give access to the DISKCHAN
 
 ## Greeseweazle at https://github.com/keirf/Greaseweazle
 Requires firmware 0.27 or newer.  Only some boards support the DISKCHANGE pin.  The rest will be simulated by spinning up the disk several times.
+Greaseweazle supports Amiga drives, but this isn't recommended as the DISKCHANGE pin isn't available for these so will cause additional wear on the disk.
 
 ## Supercard Pro at https://www.cbmstuff.com/
 Requires firmware V1.3

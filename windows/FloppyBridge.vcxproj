@@ -219,6 +219,9 @@
     <Image Include="bridge01.bmp" />
     <Image Include="bridge02.bmp" />
     <Image Include="donate.bmp" />
+    <Image Include="sbridge00.bmp" />
+    <Image Include="sbridge01.bmp" />
+    <Image Include="sbridge02.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

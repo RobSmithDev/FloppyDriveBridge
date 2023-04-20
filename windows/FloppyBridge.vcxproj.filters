@@ -132,5 +132,14 @@
     <Image Include="donate.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="sbridge00.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="sbridge01.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="sbridge02.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

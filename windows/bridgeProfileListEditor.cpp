@@ -1,10 +1,28 @@
-#pragma once
+/* Bridge Profile List  Editor (Windows)
+*
+* Copyright (C) 2021-2023 Robert Smith (@RobSmithDev)
+* https://amiga.robsmithdev.co.uk
+*
+* This file is multi-licensed under the terms of the Mozilla Public
+* License Version 2.0 as published by Mozilla Corporation and the
+* GNU General Public License, version 2 or later, as published by the
+* Free Software Foundation.
+*
+* MPL2: https://www.mozilla.org/en-US/MPL/2.0/
+* GPL2: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
+*
+* This file, along with currently active and supported interfaces
+* are maintained from by GitHub repo at
+* https://github.com/RobSmithDev/FloppyDriveBridge
+*/
 
 
 #include "bridgeProfileListEditor.h"
 #include "bridgeProfileEditor.h"
 #include "resource.h"
 #include "FloppyBridge.h"
+
+#pragma comment(lib,"Msimg32.lib")
  
 // Returns a pointer to information about the project
 void handleAbout(bool checkForUpdates, BridgeAbout** output);
@@ -158,7 +176,7 @@ void BridgeProfileListEditor::handleDrawListBox(PDRAWITEMSTRUCT item) {
 	}
 	SetStretchBltMode(item->hDC, HALFTONE);
 	SetBrushOrgEx(item->hDC, 0, 0, NULL);
-	StretchBlt(item->hDC, item->rcItem.left + 1, item->rcItem.top + 1, bitmapSize - 2, bitmapSize - 2, m_hdcTemp, 0, 0, 64, 64, SRCCOPY);
+	TransparentBlt(item->hDC, item->rcItem.left + 1, item->rcItem.top + 1, bitmapSize - 2, bitmapSize - 2, m_hdcTemp, 0, 0, 64, 64, 0x00FF00);
 	SetStretchBltMode(item->hDC, COLORONCOLOR);
 	SelectObject(m_hdcTemp, oldBmp);
 
