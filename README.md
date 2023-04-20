@@ -21,7 +21,7 @@ Software Foundation, with the exception of:
 Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
-# April 2023 (1.4 still) Fixed issues with serial access on MacOS
+* April 2023 (1.4 still) Fixed issues with serial access on MacOS
 * March 2023 (1.4): Fixed issues with stalling mode not working properly, or not as expected
                     Updated stalling mode to work better with diskspare device which seems to be very impatient!
 					Updated the icons for the supported hardware and rendered them transparently
