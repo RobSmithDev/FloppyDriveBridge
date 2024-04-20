@@ -1,6 +1,6 @@
 /* Bridge Profile List  Editor (Windows)
 *
-* Copyright (C) 2021-2023 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2024 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This file is multi-licensed under the terms of the Mozilla Public
@@ -25,7 +25,7 @@
 #pragma comment(lib,"Msimg32.lib")
  
 // Returns a pointer to information about the project
-void handleAbout(bool checkForUpdates, BridgeAbout** output);
+void handleAbout(bool checkForUpdates, FloppyBridge::BridgeAbout** output);
 bool handleGetDriverInfo(unsigned int driverIndex, FloppyDiskBridge::BridgeDriver** driverInformation);
 
 
@@ -109,11 +109,11 @@ void BridgeProfileListEditor::handleDeleteSelectedProfile() {
 }
 
 void BridgeProfileListEditor::handleURLClicked(bool isPatreon) {
-	BridgeAbout* about;
+	FloppyBridge::BridgeAbout* about;
 
 	SetCursor(m_busyCursor);
 	handleAbout(false, &about);
-	ShellExecuteA(m_dialogBox, "OPEN", isPatreon ? "https://paypal.me/RobSmithDev" : about->url, NULL, NULL, SW_SHOW);
+	ShellExecuteA(m_dialogBox, "OPEN", isPatreon ? "https://Ko-fi.com/robsmithdev" : about->url, NULL, NULL, SW_SHOW);
 }
 
 void BridgeProfileListEditor::handleProfileListMessages(WPARAM wParam, LPARAM lParam) {
@@ -305,7 +305,7 @@ INT_PTR BridgeProfileListEditor::handleDialogProc(HWND hwnd, UINT msg, WPARAM wP
 
 // Check for updates
 void BridgeProfileListEditor::doCheckForUpdates() {
-	BridgeAbout* about;
+	FloppyBridge::BridgeAbout* about;
 
 	SetCursor(m_busyCursor);
 	handleAbout(true, &about);
@@ -337,7 +337,7 @@ void BridgeProfileListEditor::setShouldCheckForUpdates(bool shouldCheck) {
 	buf[0] = shouldCheck ? '1' : '0';
 	buf[1] = '\0';
 	LONG len = 1;
-	RegSetValueA(HKEY_CURRENT_USER, "Software\\FloppyBridge\\AutoUpdateCheck", REG_SZ, buf, strlen(buf));
+	RegSetValueA(HKEY_CURRENT_USER, "Software\\FloppyBridge\\AutoUpdateCheck", REG_SZ, buf, (DWORD)strlen(buf));
 }
 
 
@@ -346,7 +346,7 @@ void BridgeProfileListEditor::setShouldCheckForUpdates(bool shouldCheck) {
 void BridgeProfileListEditor::handleInitDialog(HWND hwnd) {
 	m_dialogBox = hwnd;
 
-	BridgeAbout* about;
+	FloppyBridge::BridgeAbout* about;
 	handleAbout(false, &about);
 	char display[256];
 

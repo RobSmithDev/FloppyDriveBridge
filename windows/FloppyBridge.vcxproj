@@ -83,15 +83,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>FloppyBridge</TargetName>
-    <TargetExt>_x64.dll</TargetExt>
-    <OutDir>C:\Program Files\WinUAE\plugins</OutDir>
+    <TargetName>FloppyBridge_x64</TargetName>
+    <TargetExt>.dll</TargetExt>
+    <OutDir>D:\Virtual Floppy Drive\dokany-master\x64\Debug</OutDir>
     <IncludePath>$(ProjectDir)..\FloppyBridge;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>FloppyBridge</TargetName>
-    <TargetExt>_x64.dll</TargetExt>
+    <TargetName>FloppyBridge_x64</TargetName>
+    <TargetExt>.dll</TargetExt>
     <IncludePath>$(ProjectDir)..\FloppyBridge;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -192,6 +192,7 @@
     <ClInclude Include="..\floppybridge\SuperCardProInterface.h" />
     <ClInclude Include="bridgeProfileEditor.h" />
     <ClInclude Include="bridgeProfileListEditor.h" />
+    <ClInclude Include="D:\Virtual Floppy Drive\dokany-master\FloppyDrive\adf\floppybridge_common.h" />
     <ClInclude Include="FloppyBridge.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

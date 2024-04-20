@@ -2,7 +2,7 @@
 #define GREASEWEAZLE_FLOPPY_BRIDGE
 /* WinUAE Greaseweazle Interface for *UAE
 *
-* Copyright (C) 2021-2023 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2024 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This file is multi-licensed under the terms of the Mozilla Public
@@ -39,7 +39,7 @@ private:
 	std::string m_comPort;
 
 	// Which drive to use
-	CommonBridgeTemplate::DriveSelection m_useDrive;
+	FloppyBridge::DriveSelection m_useDrive;
 
 	// Is this a HD disk?
 	bool m_isHDDisk = false;
@@ -125,10 +125,10 @@ protected:
 	;
 
 public:
-	GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, CommonBridgeTemplate::DriveSelection drive);
+	GreaseWeazleDiskBridge(FloppyBridge::BridgeMode bridgeMode, FloppyBridge::BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, FloppyBridge::DriveSelection drive);
 
 	// This is for the static version
-	GreaseWeazleDiskBridge(BridgeMode bridgeMode, BridgeDensityMode bridgeDensity, int uaeSettings);
+	GreaseWeazleDiskBridge(FloppyBridge::BridgeMode bridgeMode, FloppyBridge::BridgeDensityMode bridgeDensity, int uaeSettings);
 
 	virtual ~GreaseWeazleDiskBridge();
 

@@ -55,13 +55,13 @@ void* hBridgeDLLHandle = nullptr;
 
 
 // Bridge library function definitions
-typedef void 			 (CALLING_CONVENSION* _BRIDGE_About)(bool allowCheckForUpdates, BridgeAbout** output);
+typedef void 			 (CALLING_CONVENSION* _BRIDGE_About)(bool allowCheckForUpdates, FloppyBridge::BridgeAbout** output);
 typedef unsigned int 	 (CALLING_CONVENSION* _BRIDGE_NumDrivers)(void);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_GetDriverInfo)(unsigned int driverIndex, FloppyDiskBridge::BridgeDriver** driverInformation);
 #ifdef _WIN32
 typedef bool			 (CALLING_CONVENSION* _BRIDGE_ShowConfigDialog)(HWND hwndParent, unsigned int* profileID);
 #endif
-typedef bool			 (CALLING_CONVENSION* _BRIDGE_GetAllProfiles)(FloppyBridgeProfileInformationDLL** profiles, unsigned int* numProfiles);
+typedef bool			 (CALLING_CONVENSION* _BRIDGE_GetAllProfiles)(FloppyBridge::FloppyBridgeProfileInformationDLL** profiles, unsigned int* numProfiles);
 typedef bool			 (CALLING_CONVENSION* _BRIDGE_ImportProfilesFromString)(char* profilesConfigString);
 typedef bool			 (CALLING_CONVENSION* _BRIDGE_ExportProfilesToString)(char** profilesConfigString);
 typedef bool			 (CALLING_CONVENSION* _BRIDGE_GetProfileConfigFromString)(unsigned int profileID, char** configString);
@@ -81,16 +81,18 @@ typedef bool 			 (CALLING_CONVENSION* _BRIDGE_GetConfigString)(BridgeDriverHandl
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_SetConfigFromString)(BridgeDriverHandle bridgeDriverHandle, char* config);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetAutoCache)(BridgeDriverHandle bridgeDriverHandle, bool* isAutoCacheMode);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetAutoCache)(BridgeDriverHandle bridgeDriverHandle, bool isAutoCacheMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeMode* bridgeMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeMode bridgeMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetDensityMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode* densityMode);
-typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetDensityMode)(BridgeDriverHandle bridgeDriverHandle, CommonBridgeTemplate::BridgeDensityMode densityMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridge::BridgeMode* bridgeMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridge::BridgeMode bridgeMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetDensityMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridge::BridgeDensityMode* densityMode);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetDensityMode)(BridgeDriverHandle bridgeDriverHandle, FloppyBridge::BridgeDensityMode densityMode);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetCurrentComPort)(BridgeDriverHandle bridgeDriverHandle, char** comPort);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetCurrentComPort)(BridgeDriverHandle bridgeDriverHandle, char* comPort);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetAutoDetectComPort)(BridgeDriverHandle bridgeDriverHandle, bool* autoDetectComPort);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetAutoDetectComPort)(BridgeDriverHandle bridgeDriverHandle, bool autoDetectComPort);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetCable)(BridgeDriverHandle bridgeDriverHandle, bool* isOnB);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetCable)(BridgeDriverHandle bridgeDriverHandle, bool isOnB);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetCable2)(BridgeDriverHandle bridgeDriverHandle, int* driveSelection);
+typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetCable2)(BridgeDriverHandle bridgeDriverHandle, int driveSelection);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverGetSmartSpeedEnabled)(BridgeDriverHandle bridgeDriverHandle, bool* enabled);
 typedef bool 			 (CALLING_CONVENSION* _BRIDGE_DriverSetSmartSpeedEnabled)(BridgeDriverHandle bridgeDriverHandle, bool enabled);
 typedef unsigned char 	 (CALLING_CONVENSION* _DRIVER_getBitSpeed)(BridgeDriverHandle bridgeDriverHandle);
@@ -121,6 +123,9 @@ typedef bool 			 (CALLING_CONVENSION* _DRIVER_isWritePending)(BridgeDriverHandle
 typedef bool 			 (CALLING_CONVENSION* _DRIVER_isWriteComplete)(BridgeDriverHandle bridgeDriverHandle);
 typedef bool 			 (CALLING_CONVENSION* _DRIVER_canTurboWrite)(BridgeDriverHandle bridgeDriverHandle);
 typedef bool 			 (CALLING_CONVENSION* _DRIVER_isReadyToWrite)(BridgeDriverHandle bridgeDriverHandle);
+typedef int 			 (CALLING_CONVENSION* _DRIVER_getTrack)(BridgeDriverHandle bridgeDriverHandle, bool side, unsigned int track, bool resyncRotation, int bufferSizeInBytes, void* data);
+typedef int 			 (CALLING_CONVENSION* _DRIVER_putTrack)(BridgeDriverHandle bridgeDriverHandle, bool side, unsigned int track, bool writeFromIndex, int bufferSizeInBytes, void* data);
+typedef int 			 (CALLING_CONVENSION* _DRIVER_setDirectMode)(BridgeDriverHandle bridgeDriverHandle, bool directMode);
 
 
 // Library function pointers
@@ -155,6 +160,8 @@ _BRIDGE_DriverGetAutoDetectComPort	BRIDGE_DriverGetAutoDetectComPort = nullptr;
 _BRIDGE_DriverSetAutoDetectComPort	BRIDGE_DriverSetAutoDetectComPort = nullptr;
 _BRIDGE_DriverGetCable	BRIDGE_DriverGetCable = nullptr;
 _BRIDGE_DriverSetCable	BRIDGE_DriverSetCable = nullptr;
+_BRIDGE_DriverGetCable2	BRIDGE_DriverGetCable2 = nullptr;
+_BRIDGE_DriverSetCable2	BRIDGE_DriverSetCable2 = nullptr;
 _BRIDGE_DriverGetAutoCache BRIDGE_DriverGetAutoCache = nullptr;
 _BRIDGE_DriverSetAutoCache BRIDGE_DriverSetAutoCache = nullptr;
 _BRIDGE_DriverGetSmartSpeedEnabled BRIDGE_DriverGetSmartSpeedEnabled = nullptr;
@@ -190,6 +197,10 @@ _DRIVER_isWritePending	DRIVER_isWritePending = nullptr;
 _DRIVER_isWriteComplete	DRIVER_isWriteComplete = nullptr;
 _DRIVER_canTurboWrite	DRIVER_canTurboWrite = nullptr;
 _DRIVER_isReadyToWrite	DRIVER_isReadyToWrite = nullptr;
+_DRIVER_getTrack DRIVER_getTrack = nullptr;
+_DRIVER_putTrack DRIVER_putTrack = nullptr;
+_DRIVER_setDirectMode DRIVER_setDirectMode = nullptr;
+
 
 // Sets up the bridge.  We assume it will persist while the application is open.
 void prepareBridge() {
@@ -250,6 +261,8 @@ void prepareBridge() {
 	BRIDGE_DriverSetSmartSpeedEnabled = (_BRIDGE_DriverSetSmartSpeedEnabled)GETFUNC(hBridgeDLLHandle, "BRIDGE_DriverSetSmartSpeedEnabled");
 	BRIDGE_DriverGetCable = (_BRIDGE_DriverGetCable)GETFUNC(hBridgeDLLHandle, "BRIDGE_DriverGetCable");
 	BRIDGE_DriverSetCable = (_BRIDGE_DriverSetCable)GETFUNC(hBridgeDLLHandle, "BRIDGE_DriverSetCable");
+	BRIDGE_DriverGetCable2 = (_BRIDGE_DriverGetCable2)GETFUNC(hBridgeDLLHandle, "BRIDGE_DriverGetCable2");
+	BRIDGE_DriverSetCable2 = (_BRIDGE_DriverSetCable2)GETFUNC(hBridgeDLLHandle, "BRIDGE_DriverSetCable2");
 	DRIVER_getBitSpeed = (_DRIVER_getBitSpeed)GETFUNC(hBridgeDLLHandle, "DRIVER_getBitSpeed");
 	DRIVER_getCurrentSide = (_DRIVER_getCurrentSide)GETFUNC(hBridgeDLLHandle, "DRIVER_getCurrentSide");
 	DRIVER_getDriveTypeID = (_DRIVER_getDriveTypeID)GETFUNC(hBridgeDLLHandle, "DRIVER_getDriveTypeID");
@@ -278,6 +291,9 @@ void prepareBridge() {
 	DRIVER_isWriteComplete = (_DRIVER_isWriteComplete)GETFUNC(hBridgeDLLHandle, "DRIVER_isWriteComplete");
 	DRIVER_canTurboWrite = (_DRIVER_canTurboWrite)GETFUNC(hBridgeDLLHandle, "DRIVER_canTurboWrite");
 	DRIVER_isReadyToWrite = (_DRIVER_isReadyToWrite)GETFUNC(hBridgeDLLHandle, "DRIVER_isReadyToWrite");
+	DRIVER_getTrack = (_DRIVER_getTrack)GETFUNC(hBridgeDLLHandle, "DRIVER_getTrack");
+	DRIVER_putTrack = (_DRIVER_putTrack)GETFUNC(hBridgeDLLHandle, "DRIVER_putTrack");
+	DRIVER_setDirectMode = (_DRIVER_setDirectMode)GETFUNC(hBridgeDLLHandle, "DRIVER_setDirectMode");
 
 	// Test a few
 	if ((!BRIDGE_About) || (!BRIDGE_NumDrivers) || (!BRIDGE_DeleteProfile)) {
@@ -353,7 +369,7 @@ bool FloppyBridgeAPI::getBridgeDriverInformation(bool allowCheckForUpdates, Brid
 		return false;
 	}
 	
-	BridgeAbout* info = nullptr;
+	FloppyBridge::BridgeAbout* info = nullptr;
 	BRIDGE_About(allowCheckForUpdates, &info);
 	if (!info) return false;
 
@@ -492,7 +508,7 @@ bool FloppyBridgeAPI::getAllProfiles(std::vector<FloppyBridgeProfileInformation>
 	profileList.clear();
 	stringListsForProfiles.clear();
 
-	FloppyBridgeProfileInformationDLL* profile = nullptr;
+	FloppyBridge::FloppyBridgeProfileInformationDLL* profile = nullptr;
 	unsigned int numProfiles = 0;
 
 	if (!BRIDGE_GetAllProfiles(&profile, &numProfiles)) return false;
@@ -604,24 +620,24 @@ bool FloppyBridgeAPI::setConfigFromString(char* config) const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Return the current bridge mode selected
-bool FloppyBridgeAPI::getBridgeMode(CommonBridgeTemplate::BridgeMode* mode) const
+bool FloppyBridgeAPI::getBridgeMode(FloppyBridge::BridgeMode* mode) const
 {
 	return BRIDGE_DriverGetMode(m_handle, mode);
 }
 // Set the currently active bridge mode.  This can be set while the bridge is in use
-bool FloppyBridgeAPI::setBridgeMode(CommonBridgeTemplate::BridgeMode newMode) const
+bool FloppyBridgeAPI::setBridgeMode(FloppyBridge::BridgeMode newMode) const
 {
 	return BRIDGE_DriverSetMode(m_handle, newMode);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Return the current bridge density mode selected
-bool FloppyBridgeAPI::getBridgeDensityMode(CommonBridgeTemplate::BridgeDensityMode* mode) const
+bool FloppyBridgeAPI::getBridgeDensityMode(FloppyBridge::BridgeDensityMode* mode) const
 {
 	return BRIDGE_DriverGetDensityMode(m_handle, mode);
 }
 // Set the currently active bridge density mode.  This can be set while the bridge is in use
-bool FloppyBridgeAPI::setBridgeDensityMode(CommonBridgeTemplate::BridgeDensityMode newMode) const
+bool FloppyBridgeAPI::setBridgeDensityMode(FloppyBridge::BridgeDensityMode newMode) const
 {
 	return BRIDGE_DriverSetDensityMode(m_handle, newMode);
 }
@@ -753,6 +769,10 @@ const FloppyDiskBridge::BridgeDriver* FloppyBridgeAPI::getDriverInfo() {
 	if (BRIDGE_GetDriverInfo(m_driverIndex, &m_driverInfo)) return m_driverInfo;
 	return nullptr;
 }
+const unsigned int FloppyBridgeAPI::getDriverTypeIndex() const {
+	return m_driverIndex;
+}
+	
 bool FloppyBridgeAPI::resetDrive(int trackNumber) {
 	return DRIVER_resetDrive(m_handle, trackNumber);
 }
@@ -812,6 +832,15 @@ int FloppyBridgeAPI::maxMFMBitPosition() {
 }
 void FloppyBridgeAPI::writeShortToBuffer(bool side, unsigned int track, unsigned short mfmData, int mfmPosition) {
 	DRIVER_writeShortToBuffer(m_handle, side, track, mfmData, mfmPosition);
+}
+int FloppyBridgeAPI::getMFMTrack(bool side, unsigned int track, bool resyncRotation, const int bufferSizeInBytes, void* output) {
+	return DRIVER_getTrack(m_handle, side, track, resyncRotation, bufferSizeInBytes, output);
+}
+bool FloppyBridgeAPI::setDirectMode(bool directModeEnable) {
+	return DRIVER_setDirectMode(m_handle, directModeEnable);
+}
+bool FloppyBridgeAPI::writeMFMTrackToBuffer(bool side, unsigned int track, bool writeFromIndex, int sizeInBytes, void* mfmData) {
+	return DRIVER_putTrack(m_handle, side, track, writeFromIndex, sizeInBytes, mfmData);
 }
 bool FloppyBridgeAPI::isWriteProtected() {
 	return DRIVER_isWriteProtected(m_handle);

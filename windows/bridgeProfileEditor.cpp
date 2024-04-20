@@ -1,6 +1,6 @@
 /* Bridge Profile Editor (Windows)
 *
-* Copyright (C) 2021-2023 Robert Smith (@RobSmithDev)
+* Copyright (C) 2021-2024 Robert Smith (@RobSmithDev)
 * https://amiga.robsmithdev.co.uk
 *
 * This file is multi-licensed under the terms of the Mozilla Public
@@ -184,7 +184,7 @@ void BridgeProfileEditor::saveToProfile() {
 
 	// Mode
 	w = GetDlgItem(m_dialogBox, IDC_MODE);
-	m_profile->bridgeMode = (CommonBridgeTemplate::BridgeMode)SendMessage(w, CB_GETCURSEL, 0, 0);	
+	m_profile->bridgeMode = (FloppyBridge::BridgeMode)SendMessage(w, CB_GETCURSEL, 0, 0);
 
 	// Smart Speed
 	w = GetDlgItem(m_dialogBox, IDC_SMART);
@@ -196,11 +196,11 @@ void BridgeProfileEditor::saveToProfile() {
 
 	// Disk Type
 	w = GetDlgItem(m_dialogBox, IDC_DISKTYPE);
-	m_profile->bridgeDensity = (CommonBridgeTemplate::BridgeDensityMode)SendMessage(w, CB_GETCURSEL, 0, 0);
+	m_profile->bridgeDensity = (FloppyBridge::BridgeDensityMode)SendMessage(w, CB_GETCURSEL, 0, 0);
 
 	// Cable select
 	w = GetDlgItem(m_dialogBox, IDC_CABLE);
-	m_profile->driveCable = (CommonBridgeTemplate::DriveSelection)SendMessage(w, CB_GETCURSEL, 0, 0);
+	m_profile->driveCable = (FloppyBridge::DriveSelection)SendMessage(w, CB_GETCURSEL, 0, 0);
 }
 
 // Dialog window message handler
@@ -296,9 +296,9 @@ void BridgeProfileEditor::onDriverSelected() {
 		SetWindowTextA(GetDlgItem(m_dialogBox, IDC_URL), info->url);
 
 		w = GetDlgItem(m_dialogBox, IDC_MODE);
-		CommonBridgeTemplate::BridgeMode mode = (CommonBridgeTemplate::BridgeMode)SendMessage(w, CB_GETCURSEL, 0, 0);
+		FloppyBridge::BridgeMode mode = (FloppyBridge::BridgeMode)SendMessage(w, CB_GETCURSEL, 0, 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_AUTOCACHE), (info->configOptions & CONFIG_OPTIONS_AUTOCACHE) != 0);
-		EnableWindow(GetDlgItem(m_dialogBox, IDC_SMART), ((info->configOptions & CONFIG_OPTIONS_SMARTSPEED) != 0) && ((mode == CommonBridgeTemplate::BridgeMode::bmFast) || (mode == CommonBridgeTemplate::BridgeMode::bmCompatible)));   // extra
+		EnableWindow(GetDlgItem(m_dialogBox, IDC_SMART), ((info->configOptions & CONFIG_OPTIONS_SMARTSPEED) != 0) && ((mode == FloppyBridge::BridgeMode::bmFast) || (mode == FloppyBridge::BridgeMode::bmCompatible)));   // extra
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_AUTODETECT), (info->configOptions & CONFIG_OPTIONS_COMPORT_AUTODETECT) != 0);
 		EnableWindow(GetDlgItem(m_dialogBox, IDC_COMPORT), ((info->configOptions & CONFIG_OPTIONS_COMPORT) != 0) && (SendMessage(GetDlgItem(m_dialogBox, IDC_AUTODETECT), BM_GETCHECK, 0,0)== BST_UNCHECKED));
 
@@ -307,20 +307,20 @@ void BridgeProfileEditor::onDriverSelected() {
 		w = GetDlgItem(m_dialogBox, IDC_CABLE);
 
 		EnableWindow(w, (info->configOptions & (CONFIG_OPTIONS_DRIVE_AB | CONFIG_OPTIONS_DRIVE_123)) != 0);
-		int i = SendMessage(w, CB_GETCURSEL, 0, 0);
+		int i = (int)SendMessage(w, CB_GETCURSEL, 0, 0);
 
 		// Remove previous list
 		while (SendMessage(w, CB_GETCOUNT, 0, 0) > 0)
 			SendMessage(w, CB_DELETESTRING, 0, 0);
 
-		int pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"IBMPC Drive as A"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
-		pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"IBMPC Drive as B"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+		int pos = (int)SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"IBMPC Drive as A"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 0);
+		pos = (int)SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"IBMPC Drive as B"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
 
 		if (info->configOptions & CONFIG_OPTIONS_DRIVE_123) {
-			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 0 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
-			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 1 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
-			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 2 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
-			pos = SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 3 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = (int)SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 0 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = (int)SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 1 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = (int)SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 2 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
+			pos = (int)SendMessage(w, CB_ADDSTRING, 0, (LPARAM)L"Shugart Drive 3 (Not Recommended)"); SendMessage(w, CB_SETITEMDATA, (WPARAM)pos, 1);
 		}
 		SendMessage(w, CB_SETCURSEL, (WPARAM)i, 0);
 	}
