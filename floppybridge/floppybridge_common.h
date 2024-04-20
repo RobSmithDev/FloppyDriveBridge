@@ -12,7 +12,7 @@
 *
 */
 #pragma once
- 
+
 namespace FloppyBridge {
 
 	// Type of bridge mode
@@ -35,11 +35,11 @@ namespace FloppyBridge {
 	// Used to select the drive connected
 	enum class DriveSelection : unsigned char {
 		dsDriveA = 0,     // IBM PC
-		dsDriveB = 1, 
+		dsDriveB = 1,
 		dsDrive0 = 2,     // SHUGART
-		dsDrive1 = 3, 
-		dsDrive2 = 4, 
-		dsDrive3 = 5 
+		dsDrive1 = 3,
+		dsDrive2 = 4,
+		dsDrive3 = 5
 	};
 
 
