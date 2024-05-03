@@ -847,6 +847,13 @@ extern "C" {
         }
         return false;
     }
+    FLOPPYBRIDGE_API bool CALLING_CONVENSION DRIVER_isStillWorking(BridgeOpened* bridgeDriverHandle) {
+        if ((bridgeDriverHandle) && (bridgeDriverHandle->bridge)) {
+            return bridgeDriverHandle->bridge->isStillWorking();
+        }
+        return false;
+    }
+
     FLOPPYBRIDGE_API void CALLING_CONVENSION DRIVER_setMotorStatus(BridgeOpened* bridgeDriverHandle, bool side, bool turnOn) {
         if ((bridgeDriverHandle) && (bridgeDriverHandle->bridge)) {
             bridgeDriverHandle->bridge->setMotorStatus(side, turnOn);

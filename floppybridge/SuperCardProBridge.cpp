@@ -58,6 +58,7 @@ bool SupercardProDiskBridge::attemptToDetectDiskChange() {
 	switch (m_io.checkForDisk(true)) {
 	case SCPErr::scpOK: return true;
 	case SCPErr::scpNoDiskInDrive: return false;
+	case SCPErr::scpUnknownError: m_wasIOError = true; return false;
 	default: return isDiskInDrive();
 	}
 }
@@ -65,6 +66,11 @@ bool SupercardProDiskBridge::attemptToDetectDiskChange() {
 // If your device supports the DiskChange option then return TRUE here.  If not, then the code will simulate it
 bool SupercardProDiskBridge::supportsDiskChange() {
 	return true;
+}
+
+// Return TRUE if the drive is still connected and working
+bool SupercardProDiskBridge::isStillWorking() {
+	return !m_wasIOError;
 }
 
 // Called when the class is about to shut down
@@ -155,7 +161,8 @@ bool SupercardProDiskBridge::checkWriteProtectStatus(const bool forceCheck) {
 bool SupercardProDiskBridge::getDiskChangeStatus(const bool forceCheck) {
 	// We actually trigger a SEEK operation to ensure this is right
 	if (forceCheck) {
-		if (m_io.checkForDisk(forceCheck) == SCPErr::scpNoDiskInDrive) {
+		switch (m_io.checkForDisk(forceCheck)) {
+		case SCPErr::scpNoDiskInDrive:
 			if (m_currentCylinder == 0) {
 				m_io.performNoClickSeek();
 			}
@@ -163,12 +170,15 @@ bool SupercardProDiskBridge::getDiskChangeStatus(const bool forceCheck) {
 				m_io.selectTrack((m_currentCylinder > 40) ? m_currentCylinder - 1 : m_currentCylinder + 1, true);
 				m_io.selectTrack(m_currentCylinder, true);
 			}
+			break;
+		case SCPErr::scpUnknownError: m_wasIOError = true; return false;
 		}
 	}
 
 	switch (m_io.checkForDisk(forceCheck)) {
 	case SCPErr::scpOK: return true;
 	case SCPErr::scpNoDiskInDrive: return false;
+	case SCPErr::scpUnknownError: m_wasIOError = true; return false;
 	default: return isDiskInDrive();
 	}
 }
