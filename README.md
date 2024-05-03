@@ -21,12 +21,13 @@ Software Foundation, with the exception of:
 Which are separately licenced as UnLicence - see http://unlicense.org
 
 # Updates:
-* April 2024 (1.6)  Sped up the main thread by refactoring and changing how a lock worked that was fixed in 1.5.  It now loads disks *slightly* faster
+* May 2024 (1.6)    Sped up the main thread by refactoring and changing how a lock worked that was fixed in 1.5.  It now loads disks *slightly* faster
                     Added support for "Direct Mode" which allows direct MFM buffer reading and writing so you can use this plugin outside of WinUAE 
 				    Added some extra commands to the library to make it easier to use outside of WinUAE
 					Changed donate link from PayPal to KoFi
 					Updated the writing code for DrawBridge, Greaseweazle and SupercardPRO so it now calculates precompensation correctly when writing to disks
 					Some refactoring (slightly breaking - namespace changes) to help use this as a shared dynamic library with less header files needed
+					Added support for the host application to be able to detect if the device is no longer working (or present!)
 * Feb 2024 (1.5) Fixed issue with locks on new Apple M1/2 devices for Amiberry
 * April 2023 (1.4 still) Fixed issues with serial access on MacOS
 * March 2023 (1.4): Fixed issues with stalling mode not working properly, or not as expected
