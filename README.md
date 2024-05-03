@@ -16,9 +16,11 @@ as published by Mozilla Corporation and the GNU General Public License, version 
 Software Foundation, with the exception of:
 	floppybridge_lib.cpp
 	floppybridge_lib.h
+	floppybridge_common.h
 	floppybridge_abstract.h
 	floppybridge_config.h
 Which are separately licenced as UnLicence - see http://unlicense.org
+Those are also the files to use if you want to use this plugin in something you're making!
 
 # Updates:
 * May 2024 (1.6)    Sped up the main thread by refactoring and changing how a lock worked that was fixed in 1.5.  It now loads disks *slightly* faster
