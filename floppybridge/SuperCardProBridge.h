@@ -40,7 +40,7 @@ private:
 
 	// Used to detect disconnection of SupercardPRO while in use
 	bool m_wasIOError = false;
-	
+
 	// Which drive to use
 	bool m_useDriveA = false;
 

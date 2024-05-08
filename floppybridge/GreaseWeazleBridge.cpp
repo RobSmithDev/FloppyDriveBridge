@@ -225,14 +225,14 @@ bool GreaseWeazleDiskBridge::performNoClickSeek() {
 	if (!m_io.supportsDiskChange()) return true;
 
 	switch (m_io.performNoClickSeek()) {
-		case GWResponse::drOK:
-			updateLastManualCheckTime();
-			return true;
-		case GWResponse::drOldFirmware:
-			return false;
-		case GWResponse::drError:
-			m_wasIOError = true;
-			return false;
+	case GWResponse::drOK:
+		updateLastManualCheckTime();
+		return true;
+	case GWResponse::drOldFirmware:
+		return false;
+	case GWResponse::drError:
+		m_wasIOError = true;
+		return false;
 
 	}
 	return false;

@@ -101,7 +101,7 @@ bool BridgeConfig::fromString(char* serialisedOptions) {
     // Parse
     if (params.size() < 5) return false;
 
-    // Validate its for this bridge
+    // Validate it's for this bridge
     bridgeIndex = atoi(params[0].c_str());
 
     unsigned int i = atoi(params[1].c_str());
@@ -185,7 +185,7 @@ void handleAbout(bool checkForUpdates, FloppyBridge::BridgeAbout** output) {
         if (BridgeInformationUpdate.isUpdateAvailable) *output = (FloppyBridge::BridgeAbout*)&BridgeInformationUpdate; else *output = (FloppyBridge::BridgeAbout*)&BridgeInformation;
 
 #else
-    if (output) *output = (BridgeAbout*)&BridgeInformation;
+    if (output) *output = (FloppyBridge::BridgeAbout*)&BridgeInformation;
 #endif 
 }
 
@@ -306,7 +306,7 @@ extern "C" {
             auto f = profileList.find(*profileID);
             if (f == profileList.end()) return false;
 
-            // This doesnt modify whats passed unless it returns TRUE
+            // This doesn't modify what's passed unless it returns TRUE
             BridgeProfileEditor editor(hInstance, hwndParent, bridgeLogos, f->second);
             return editor.doModal();
         }
@@ -550,7 +550,7 @@ extern "C" {
     // Creates an instance of a driver from a config string.  This will automatically choose the correct driver index
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriverFromProfileID(unsigned int profileID, BridgeOpened** bridgeDriverHandle) {
         if (!bridgeDriverHandle) return false;
-        auto f = profileList.find(profileID);
+        const auto f = profileList.find(profileID);
         if (f == profileList.end()) return false;
 
         if (!BRIDGE_CreateDriver(f->second->bridgeIndex, bridgeDriverHandle)) return false;
