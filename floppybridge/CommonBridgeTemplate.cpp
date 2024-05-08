@@ -556,7 +556,7 @@ void CommonBridgeTemplate::handleBackgroundDiskRead() {
 						}
 					}
 				}
-				
+
 				// If we have everything then stop
 				if (!m_mfmRead[m_actualCurrentCylinder][(int)m_actualFloppySide].next.ready) return false;
 
@@ -850,7 +850,7 @@ int CommonBridgeTemplate::getMFMTrack(bool side, unsigned int track, bool resync
 
 		RotationExtractor::MFMSample* sample = trackData.mfmBuffer;
 		const int bitsRemaining = trackData.amountReadInBits;
-		const int bytesToCopy = min((bitsRemaining + 7) / 8, bufferSizeInBytes);
+		const int bytesToCopy = std::min((bitsRemaining + 7) / 8, bufferSizeInBytes);
 		unsigned char* outByte = (unsigned char*)output;
 
 		for (int byte = 0; byte < bytesToCopy; byte++) {
@@ -892,7 +892,7 @@ int CommonBridgeTemplate::getMFMTrack(bool side, unsigned int track, bool resync
 	RotationExtractor::MFMSample* sample = m_mfmRead[m_currentTrack][(int)m_floppySide].current.mfmBuffer;
 
 	const int bitsRemaining = m_mfmRead[m_currentTrack][(int)m_floppySide].current.amountReadInBits;
-	const int bytesToCopy = min((bitsRemaining + 7) / 8, bufferSizeInBytes);
+	const int bytesToCopy = std::min((bitsRemaining + 7) / 8, bufferSizeInBytes);
 	unsigned char* outByte = (unsigned char*)output;
 	
 	for (int byte = 0; byte < bytesToCopy; byte++) {
@@ -1552,11 +1552,18 @@ bool CommonBridgeTemplate::setDirectMode(bool directModeEnable) {
 			std::lock_guard lock(m_queueProtect);
 			if (m_queue.empty()) return true;
 		}
+#ifdef _WIN32
 		Sleep(100);
+#else
+		usleep(100000);
+#endif
 	}
 
 	return true;
 }
+
+#include <algorithm>
+#include <cstring>
 
 // write data to the MFM track buffer to be written to disk - poll isWriteComplete to check for completion
 bool CommonBridgeTemplate::writeMFMTrackToBuffer(bool side, unsigned int track, bool writeFromIndex, int sizeInBytes, void* mfmData) {
@@ -1602,8 +1609,12 @@ bool CommonBridgeTemplate::writeMFMTrackToBuffer(bool side, unsigned int track, 
 	m_delayStreamingStart = std::chrono::steady_clock::now();
 	abortDiskReading();
 
-	sizeInBytes = min(sizeInBytes, (MFM_BUFFER_MAX_TRACK_LENGTH * 8) - 16);
+	sizeInBytes = std::min(sizeInBytes, (MFM_BUFFER_MAX_TRACK_LENGTH * 8) - 16);
+#ifdef _WIN32
 	memcpy_s(m_currentWriteTrack.mfmBuffer, sizeof(m_currentWriteTrack.mfmBuffer), mfmData, sizeInBytes);
+#else
+	memcpy(m_currentWriteTrack.mfmBuffer, mfmData, sizeInBytes);
+#endif
 	m_currentWriteTrack.floppyBufferSizeBits = sizeInBytes * 8;
 
 	m_writePending = false;

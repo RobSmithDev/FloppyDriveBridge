@@ -128,7 +128,6 @@ protected:
 	// It's virtual as the default method issues a read and looks for data.  If you have a better implementation then override this
 	virtual bool attemptToDetectDiskChange() override;
 
-	;
 
 public:
 	GreaseWeazleDiskBridge(FloppyBridge::BridgeMode bridgeMode, FloppyBridge::BridgeDensityMode bridgeDensity, bool enableAutoCache, bool useSmartSpeed, bool autoDetectComPort, char* comPort, FloppyBridge::DriveSelection drive);

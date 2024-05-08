@@ -251,7 +251,7 @@ bool ArduinoFloppyDiskBridge::performNoClickSeek() {
 		return false;
 	case ArduinoFloppyReader::DiagnosticResponse::drReadResponseFailed:
 	case ArduinoFloppyReader::DiagnosticResponse::drSendFailed:
-	case ArduinoFloppyReader::DiagnosticResponse::drSendParameterFailed:		
+	case ArduinoFloppyReader::DiagnosticResponse::drSendParameterFailed:
 		m_wasIOError = true;
 		return false;
 	}

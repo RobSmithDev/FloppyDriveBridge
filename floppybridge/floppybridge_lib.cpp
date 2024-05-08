@@ -24,7 +24,6 @@
 #include <dlfcn.h>
 #endif
 
-#ifndef AMIBERRY
 #ifdef _WIN32
 #include <Windows.h>
 #ifdef WINUAE
@@ -43,7 +42,7 @@ HMODULE WIN32_LoadLibrary(const TCHAR*);
 #ifdef _WIN32
 #define MODULENAME _T("FloppyBridge.dll")
 #else
-#define MODULENAME "FloppyBridge.so"
+#define MODULENAME "libfloppybridge.so"
 #endif
 #endif
 
@@ -316,7 +315,6 @@ void prepareBridge() {
 #endif
 	}
 }
-#endif //AMIBERRY
 
 // character conversions
 using convert_t = std::codecvt_utf8<wchar_t>;
@@ -360,12 +358,8 @@ std::vector<std::string> stringListsForProfiles;
 
 // Returns TRUE if the floppy bridge library has been loaded and is ready to be queried
 bool FloppyBridgeAPI::isAvailable() {
-#ifdef AMIBERRY
-	return true;
-#else
 	prepareBridge();
 	return hBridgeDLLHandle != 0;
-#endif
 }
 
 // Populates bridgeInformation with information about the Bridge DLL. This should be called and shown somewhere
@@ -713,7 +707,7 @@ bool FloppyBridgeAPI::setComPort(const TCHAR* comPort) const
 	_quickw2a(comPort, comPortA);
 	return BRIDGE_DriverSetCurrentComPort(m_handle, (char*)comPortA.c_str());
 #else
-	return BRIDGE_DriverSetCurrentComPort(m_handle, comPort);
+	return BRIDGE_DriverSetCurrentComPort(m_handle, (char*)comPort);
 #endif
 }
 

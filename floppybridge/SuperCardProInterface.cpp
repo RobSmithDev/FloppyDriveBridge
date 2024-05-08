@@ -389,7 +389,7 @@ bool SCPInterface::selectSurface(const DiskSurface side) {
 
 // Read RAW data from the current track and surface 
 SCPErr SCPInterface::checkForDisk(bool force) {
-	if (force) 
+	if (force)
 		if (!checkPins()) return SCPErr::scpUnknownError;
 
 	return m_diskInDrive ? SCPErr::scpOK : SCPErr::scpNoDiskInDrive;
