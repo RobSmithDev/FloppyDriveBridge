@@ -707,7 +707,7 @@ bool FloppyBridgeAPI::setComPort(const TCHAR* comPort) const
 	_quickw2a(comPort, comPortA);
 	return BRIDGE_DriverSetCurrentComPort(m_handle, (char*)comPortA.c_str());
 #else
-	return BRIDGE_DriverSetCurrentComPort(m_handle, (char*)comPort);
+	return BRIDGE_DriverSetCurrentComPort(m_handle, comPort);
 #endif
 }
 

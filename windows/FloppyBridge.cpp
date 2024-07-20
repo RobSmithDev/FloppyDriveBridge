@@ -422,7 +422,7 @@ extern "C" {
     // Returns a pointer to a string containing the details for a profile
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_GetProfileConfigFromString(unsigned int profileID, char** profilesConfigString) {
         if (!profilesConfigString) return false;
-        auto f = profileList.find(profileID);
+        const auto f = profileList.find(profileID);
         if (f == profileList.end()) return false;
 
         f->second->toString(profilesConfigString);
@@ -550,7 +550,7 @@ extern "C" {
     // Creates an instance of a driver from a config string.  This will automatically choose the correct driver index
     FLOPPYBRIDGE_API bool CALLING_CONVENSION BRIDGE_CreateDriverFromProfileID(unsigned int profileID, BridgeOpened** bridgeDriverHandle) {
         if (!bridgeDriverHandle) return false;
-        const auto f = profileList.find(profileID);
+        auto f = profileList.find(profileID);
         if (f == profileList.end()) return false;
 
         if (!BRIDGE_CreateDriver(f->second->bridgeIndex, bridgeDriverHandle)) return false;

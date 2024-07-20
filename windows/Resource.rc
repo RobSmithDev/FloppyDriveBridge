@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,6,0,2
- PRODUCTVERSION 1,6,0,2
+ FILEVERSION 1,6,0,4
+ PRODUCTVERSION 1,6,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x3L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "RobSmithDev https://amiga.robsmithdev.co.uk"
             VALUE "FileDescription", "UAE Floppy Bridge https://amiga.robsmithdev.co.uk"
-            VALUE "FileVersion", "1.6.0.2"
+            VALUE "FileVersion", "1.6.0.4"
             VALUE "InternalName", "FloppyBridge.dll"
             VALUE "LegalCopyright", "Copyright (C) 2021-2024 RobSmithDev"
             VALUE "OriginalFilename", "FloppyBridge.dll"
             VALUE "ProductName", "UAE Floppy Bridge"
-            VALUE "ProductVersion", "1.6.0.2"
+            VALUE "ProductVersion", "1.6.0.4"
         END
     END
     BLOCK "VarFileInfo"

@@ -251,7 +251,7 @@ bool ArduinoFloppyDiskBridge::performNoClickSeek() {
 		return false;
 	case ArduinoFloppyReader::DiagnosticResponse::drReadResponseFailed:
 	case ArduinoFloppyReader::DiagnosticResponse::drSendFailed:
-	case ArduinoFloppyReader::DiagnosticResponse::drSendParameterFailed:
+	case ArduinoFloppyReader::DiagnosticResponse::drSendParameterFailed:		
 		m_wasIOError = true;
 		return false;
 	}
@@ -270,8 +270,8 @@ bool ArduinoFloppyDiskBridge::setCurrentCylinder(const unsigned int cylinder) {
 	if (!m_io.getFirwareVersion().fullControlMod) ignoreDiskCheck |= !isReadyForManualDiskCheck();
 
 	// Go! - and don't ask
-	ArduinoFloppyReader::DiagnosticResponse dr = m_io.selectTrack(cylinder, ArduinoFloppyReader::TrackSearchSpeed::tssFast, ignoreDiskCheck);
-	if (dr != ArduinoFloppyReader::DiagnosticResponse::drOK) dr = m_io.selectTrack(cylinder, ArduinoFloppyReader::TrackSearchSpeed::tssNormal, ignoreDiskCheck);
+	ArduinoFloppyReader::DiagnosticResponse dr = m_io.selectTrack(cylinder, ArduinoFloppyReader::TrackSearchSpeed::tssVeryFast, ignoreDiskCheck);
+	if (dr != ArduinoFloppyReader::DiagnosticResponse::drOK) dr = m_io.selectTrack(cylinder, ArduinoFloppyReader::TrackSearchSpeed::tssFast, ignoreDiskCheck);
 	if (dr != ArduinoFloppyReader::DiagnosticResponse::drOK) dr = m_io.selectTrack(cylinder, ArduinoFloppyReader::TrackSearchSpeed::tssNormal, ignoreDiskCheck);
 	if (dr != ArduinoFloppyReader::DiagnosticResponse::drOK) dr = m_io.selectTrack(cylinder, ArduinoFloppyReader::TrackSearchSpeed::tssNormal, ignoreDiskCheck);
 	if (dr == ArduinoFloppyReader::DiagnosticResponse::drOK) {
@@ -303,6 +303,26 @@ CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readData(PLL::Bridge
 		case ArduinoFloppyReader::DiagnosticResponse::drOK: return ReadResponse::rrOK;
 		case ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive: return ReadResponse::rrNoDiskInDrive;
 		default:  return ReadResponse::rrError;
+	}
+}
+
+// Called for a direct read. This does not match up a rotation and should be used with the pll initialized with the LinearExtractor
+//		pll:           required 
+// Returns: ReadResponse, explains its self
+CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readLinearData(PLL::BridgePLL& pll) {
+	std::chrono::time_point<std::chrono::steady_clock> m_lastSeek = std::chrono::steady_clock::now();
+	ArduinoFloppyReader::DiagnosticResponse result = m_io.readData(pll);
+
+	const auto timePassedSinceSeek = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - m_lastSeek).count();
+
+	char ttt[200];
+	sprintf_s(ttt, "%i\n", timePassedSinceSeek);
+	OutputDebugStringA(ttt);
+
+	switch (result) {
+	case ArduinoFloppyReader::DiagnosticResponse::drOK: return ReadResponse::rrOK;
+	case ArduinoFloppyReader::DiagnosticResponse::drNoDiskInDrive: return ReadResponse::rrNoDiskInDrive;
+	default:  return ReadResponse::rrError;
 	}
 }
 
