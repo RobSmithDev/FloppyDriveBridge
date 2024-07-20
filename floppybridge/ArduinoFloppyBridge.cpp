@@ -310,14 +310,7 @@ CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readData(PLL::Bridge
 //		pll:           required 
 // Returns: ReadResponse, explains its self
 CommonBridgeTemplate::ReadResponse ArduinoFloppyDiskBridge::readLinearData(PLL::BridgePLL& pll) {
-	std::chrono::time_point<std::chrono::steady_clock> m_lastSeek = std::chrono::steady_clock::now();
 	ArduinoFloppyReader::DiagnosticResponse result = m_io.readData(pll);
-
-	const auto timePassedSinceSeek = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - m_lastSeek).count();
-
-	char ttt[200];
-	sprintf_s(ttt, "%i\n", timePassedSinceSeek);
-	OutputDebugStringA(ttt);
 
 	switch (result) {
 	case ArduinoFloppyReader::DiagnosticResponse::drOK: return ReadResponse::rrOK;
