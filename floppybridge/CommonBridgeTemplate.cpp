@@ -836,6 +836,9 @@ int CommonBridgeTemplate::getMFMTrack(bool side, unsigned int track, bool resync
 		// put it back!
 		m_pll.setRotationExtractor(&m_extractor);
 
+		// Prevent disk check while we're doing this
+		m_lastDiskCheckTime = std::chrono::steady_clock::now();
+
 		// Release thread
 		threadLockControl(false);
 
@@ -1574,6 +1577,9 @@ bool CommonBridgeTemplate::writeMFMTrackToBuffer(bool side, unsigned int track, 
 		m_writeCompletePending = false;
 		m_writePending = false;
 		m_writeComplete = true;
+
+		// Prevent disk check while we're doing this
+		m_lastDiskCheckTime = std::chrono::steady_clock::now();
 
 		// Release thread
 		threadLockControl(false);
