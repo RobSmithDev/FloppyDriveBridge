@@ -23,6 +23,10 @@ Which are separately licenced as UnLicence - see http://unlicense.org
 Those are also the files to use if you want to use this plugin in something you're making!
 
 # Updates:
+* July 2024 (1.6.4) Faster direct read/write access to floppy disks
+					Updated Windows update check code
+					Fixed some compile issues
+					Fixed a strange crash bug relating to data not being present when expected
 * May 2024 (1.6)    Sped up the main thread by refactoring and changing how a lock worked that was fixed in 1.5.  It now loads disks *slightly* faster
                     Added support for "Direct Mode" which allows direct MFM buffer reading and writing so you can use this plugin outside of WinUAE 
 				    Added some extra commands to the library to make it easier to use outside of WinUAE
