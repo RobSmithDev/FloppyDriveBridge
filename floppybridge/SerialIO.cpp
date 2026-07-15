@@ -673,9 +673,18 @@ SerialIO::Response SerialIO::configurePort(const Configuration& configuration) {
 	term.c_ospeed = configuration.baudRate;
 	if (ioctl(m_portHandle, TCSETS2, &term) < 0) return Response::rUnknownError;
 #else
+	// Passing raw numeric baud rates to cfsetspeed() is non-portable across
+	// libc implementations and glibc ABIs. Use Linux's B2000000 explicitly.
+	if (baud == 2000000) {
+#ifdef B2000000
+		baud = B2000000;
+#else
+		return Response::rUnknownError;
+#endif
+	}
 	term.c_cflag &= ~CBAUD;
 	term.c_cflag |= CBAUDEX;
-	if (cfsetspeed(&term, baud) < 0) return Response::rUnknownError;
+	if (cfsetspeed(&term, static_cast<speed_t>(baud)) < 0) return Response::rUnknownError;
 #endif
 	}
 #endif
